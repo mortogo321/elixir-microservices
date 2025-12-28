@@ -1,4 +1,5 @@
 defmodule ApiWeb.RoomChannel do
+  @moduledoc false
   use ApiWeb, :channel
 
   @impl true

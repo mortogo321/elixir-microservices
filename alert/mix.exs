@@ -26,7 +26,7 @@ defmodule Alert.MixProject do
   defp deps do
     [
       {:shared, path: "../shared"},
-      {:amqp, "~> 3.3"},
+      {:amqp, "~> 4.0"},
       {:jason, "~> 1.4"},
       {:swoosh, "~> 1.16"},
       {:gen_smtp, "~> 1.2"},

@@ -1,5 +1,6 @@
 defmodule ApiWeb.ApiSpec do
-  alias OpenApiSpex.{Info, OpenApi, Server, Components, SecurityScheme}
+  @moduledoc false
+  alias OpenApiSpex.{Components, Info, OpenApi, SecurityScheme, Server}
   @behaviour OpenApi
 
   @impl OpenApi

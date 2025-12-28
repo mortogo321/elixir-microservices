@@ -1,4 +1,5 @@
 defmodule ApiWeb.MessageChannel do
+  @moduledoc false
   use ApiWeb, :channel
 
   alias Api.Messages

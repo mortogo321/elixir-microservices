@@ -1,4 +1,5 @@
 defmodule ApiWeb.Plugs.AuthPipeline do
+  @moduledoc false
   use Guardian.Plug.Pipeline,
     otp_app: :api,
     module: Api.Guardian,

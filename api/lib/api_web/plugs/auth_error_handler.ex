@@ -1,4 +1,5 @@
 defmodule ApiWeb.Plugs.AuthErrorHandler do
+  @moduledoc false
   import Plug.Conn
 
   @behaviour Guardian.Plug.ErrorHandler

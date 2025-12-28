@@ -1,4 +1,5 @@
 defmodule Api.Guardian do
+  @moduledoc false
   use Guardian, otp_app: :api
 
   alias Api.Accounts

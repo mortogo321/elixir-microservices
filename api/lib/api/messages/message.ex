@@ -1,4 +1,5 @@
 defmodule Api.Messages.Message do
+  @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
 

@@ -1,4 +1,5 @@
 defmodule ApiWeb.Schemas do
+  @moduledoc false
   alias OpenApiSpex.Schema
 
   defmodule User do

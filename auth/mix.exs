@@ -41,7 +41,7 @@ defmodule Auth.MixProject do
       {:jose, "~> 1.11"},
 
       # Message Queue
-      {:amqp, "~> 3.3"},
+      {:amqp, "~> 4.0"},
 
       # Utils
       {:jason, "~> 1.2"},
