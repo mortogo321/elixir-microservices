@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 # Stage: base - Common base image with Bun
 # -----------------------------------------------------------------------------
-FROM oven/bun:1.0-alpine AS base
+FROM oven/bun:1-alpine AS base
 
 WORKDIR /app
 
@@ -17,8 +17,8 @@ FROM base AS development
 
 ENV NODE_ENV=development
 
-# Copy package files first for better layer caching
-COPY package.json bun.lockb* ./
+# Copy package files first for better layer caching (support both lockfile formats)
+COPY package.json bun.lock* bun.lockb* ./
 
 # Install dependencies (will be overwritten by volume mount but cached in image)
 RUN bun install
@@ -40,16 +40,16 @@ CMD ["/usr/local/bin/docker-entrypoint.sh"]
 # -----------------------------------------------------------------------------
 FROM base AS deps
 
-COPY package.json bun.lockb* ./
-RUN bun install --production --frozen-lockfile
+COPY package.json bun.lock* bun.lockb* ./
+RUN bun install --production
 
 # -----------------------------------------------------------------------------
 # Stage: build - Build application for production
 # -----------------------------------------------------------------------------
 FROM base AS build
 
-COPY package.json bun.lockb* ./
-RUN bun install --frozen-lockfile
+COPY package.json bun.lock* bun.lockb* ./
+RUN bun install
 
 COPY tsconfig.json biome.json ./
 COPY src src
@@ -61,14 +61,11 @@ RUN bun build src/index.ts --outdir ./dist --target bun --minify
 # -----------------------------------------------------------------------------
 # Stage: production - Minimal runtime image
 # -----------------------------------------------------------------------------
-FROM oven/bun:1.0-alpine AS production
+FROM oven/bun:1-alpine AS production
 
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup -g 1000 bun && \
-    adduser -u 1000 -G bun -s /bin/sh -D bun
-
+# bun user already exists in oven/bun image, just use it
 # Copy production dependencies
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
