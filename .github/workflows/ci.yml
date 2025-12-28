@@ -55,12 +55,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-elixir-
 
-      - name: Install Elixir dependencies
-        run: |
-          cd shared && mix deps.get && cd ..
-          cd api && mix deps.get && cd ..
-          cd auth && mix deps.get && cd ..
-          cd alert && mix deps.get
+      - name: Verify Elixir installation
+        run: elixir --version
+
+      - name: Install shared deps
+        working-directory: shared
+        run: mix deps.get
+
+      - name: Install api deps
+        working-directory: api
+        run: mix deps.get
+
+      - name: Install auth deps
+        working-directory: auth
+        run: mix deps.get
+
+      - name: Install alert deps
+        working-directory: alert
+        run: mix deps.get
 
       - name: Check Elixir formatting
         run: |
@@ -69,11 +81,17 @@ jobs:
           mix format --check-formatted auth/
           mix format --check-formatted alert/
 
-      - name: Run Credo (Elixir linter)
-        run: |
-          cd api && mix credo --strict && cd ..
-          cd auth && mix credo --strict && cd ..
-          cd alert && mix credo --strict
+      - name: Run Credo on api
+        working-directory: api
+        run: mix credo --strict
+
+      - name: Run Credo on auth
+        working-directory: auth
+        run: mix credo --strict
+
+      - name: Run Credo on alert
+        working-directory: alert
+        run: mix credo --strict
 
       # -------------------------------------------------------------------------
       # Bun/TypeScript Code Quality
@@ -155,18 +173,33 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-elixir-
 
-      - name: Install Elixir dependencies
-        run: |
-          cd shared && mix deps.get && cd ..
-          cd api && mix deps.get && cd ..
-          cd auth && mix deps.get && cd ..
-          cd alert && mix deps.get
+      - name: Install shared deps
+        working-directory: shared
+        run: mix deps.get
 
-      - name: Compile Elixir (warnings as errors)
-        run: |
-          cd api && mix compile --warnings-as-errors && cd ..
-          cd auth && mix compile --warnings-as-errors && cd ..
-          cd alert && mix compile --warnings-as-errors
+      - name: Install api deps
+        working-directory: api
+        run: mix deps.get
+
+      - name: Install auth deps
+        working-directory: auth
+        run: mix deps.get
+
+      - name: Install alert deps
+        working-directory: alert
+        run: mix deps.get
+
+      - name: Compile api
+        working-directory: api
+        run: mix compile --warnings-as-errors
+
+      - name: Compile auth
+        working-directory: auth
+        run: mix compile --warnings-as-errors
+
+      - name: Compile alert
+        working-directory: alert
+        run: mix compile --warnings-as-errors
 
       - name: Run API tests with coverage
         working-directory: api
