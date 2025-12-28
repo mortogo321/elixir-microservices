@@ -82,11 +82,12 @@ defmodule Alert.Consumer do
     exchange = Application.get_env(:alert, :rabbitmq_exchange, "events")
     queue = Application.get_env(:alert, :rabbitmq_queue, "alert.user_signup")
 
-    with {:ok, connection} <- AMQP.Connection.open(
-           host: host,
-           username: user,
-           password: pass
-         ),
+    with {:ok, connection} <-
+           AMQP.Connection.open(
+             host: host,
+             username: user,
+             password: pass
+           ),
          {:ok, channel} <- AMQP.Channel.open(connection) do
       # Declare exchange
       :ok = AMQP.Exchange.declare(channel, exchange, :topic, durable: true)

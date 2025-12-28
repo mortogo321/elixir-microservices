@@ -5,21 +5,22 @@ defmodule ApiWeb.MessageController do
   alias Api.Messages
   alias ApiWeb.Schemas.{Message, MessageRequest, MessagesResponse, Error}
 
-  tags ["messages"]
+  tags(["messages"])
 
-  operation :index,
+  operation(:index,
     summary: "List messages",
     description: "Returns a list of all messages (public)",
     responses: [
       ok: {"Messages list", "application/json", MessagesResponse}
     ]
+  )
 
   def index(conn, _params) do
     messages = Messages.list_messages()
     json(conn, %{messages: Enum.map(messages, &message_to_json/1)})
   end
 
-  operation :show,
+  operation(:show,
     summary: "Get message",
     description: "Returns a specific message by ID",
     parameters: [
@@ -30,13 +31,14 @@ defmodule ApiWeb.MessageController do
       ok: {"Message", "application/json", Message},
       not_found: {"Not found", "application/json", Error}
     ]
+  )
 
   def show(conn, %{"id" => id}) do
     message = Messages.get_message!(id)
     json(conn, %{message: message_to_json(message)})
   end
 
-  operation :create,
+  operation(:create,
     summary: "Create message",
     description: "Create a new message (requires authentication)",
     security: [%{"bearer" => []}],
@@ -45,6 +47,7 @@ defmodule ApiWeb.MessageController do
       created: {"Message created", "application/json", Message},
       unprocessable_entity: {"Validation error", "application/json", Error}
     ]
+  )
 
   def create(conn, %{"message" => message_params}) do
     user = Guardian.Plug.current_resource(conn)
@@ -63,7 +66,7 @@ defmodule ApiWeb.MessageController do
     end
   end
 
-  operation :update,
+  operation(:update,
     summary: "Update message",
     description: "Update an existing message (owner only)",
     parameters: [
@@ -76,6 +79,7 @@ defmodule ApiWeb.MessageController do
       forbidden: {"Forbidden", "application/json", Error},
       unprocessable_entity: {"Validation error", "application/json", Error}
     ]
+  )
 
   def update(conn, %{"id" => id, "message" => message_params}) do
     message = Messages.get_message!(id)
@@ -98,7 +102,7 @@ defmodule ApiWeb.MessageController do
     end
   end
 
-  operation :delete,
+  operation(:delete,
     summary: "Delete message",
     description: "Delete a message (owner only)",
     parameters: [
@@ -109,6 +113,7 @@ defmodule ApiWeb.MessageController do
       no_content: "Message deleted",
       forbidden: {"Forbidden", "application/json", Error}
     ]
+  )
 
   def delete(conn, %{"id" => id}) do
     message = Messages.get_message!(id)

@@ -10,13 +10,14 @@ config :auth, Auth.Repo,
   database: System.get_env("POSTGRES_DB", "auth_dev"),
   pool_size: 10
 
-config :auth, :grpc,
-  port: String.to_integer(System.get_env("GRPC_PORT", "50051"))
+config :auth, :grpc, port: String.to_integer(System.get_env("GRPC_PORT", "50051"))
 
 config :auth, :jwt,
   secret_key: System.get_env("JWT_SECRET_KEY", "dev_jwt_secret_key_min_32_chars_long"),
-  access_token_ttl: 3600,       # 1 hour
-  refresh_token_ttl: 604_800    # 7 days
+  # 1 hour
+  access_token_ttl: 3600,
+  # 7 days
+  refresh_token_ttl: 604_800
 
 config :auth,
   rabbitmq_host: System.get_env("RABBITMQ_HOST", "localhost"),

@@ -30,6 +30,5 @@ if config_env() == :prod do
     http: [ip: {0, 0, 0, 0}, port: port],
     secret_key_base: secret_key_base
 
-  config :api, Api.Guardian,
-    secret_key: System.get_env("GUARDIAN_SECRET_KEY", secret_key_base)
+  config :api, Api.Guardian, secret_key: System.get_env("GUARDIAN_SECRET_KEY", secret_key_base)
 end

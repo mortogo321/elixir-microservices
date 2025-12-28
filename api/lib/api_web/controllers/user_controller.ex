@@ -5,35 +5,42 @@ defmodule ApiWeb.UserController do
   alias Api.Accounts
   alias ApiWeb.Schemas.{User, UserRequest, Error}
 
-  tags ["users"]
+  tags(["users"])
 
-  operation :me,
+  operation(:me,
     summary: "Get current user",
     description: "Returns the currently authenticated user",
     security: [%{"bearer" => []}],
     responses: [
       ok: {"Current user", "application/json", User}
     ]
+  )
 
   def me(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
     json(conn, %{user: user})
   end
 
-  operation :index,
+  operation(:index,
     summary: "List users",
     description: "Returns a list of all users",
     security: [%{"bearer" => []}],
     responses: [
-      ok: {"Users list", "application/json", %OpenApiSpex.Schema{type: :object, properties: %{users: %OpenApiSpex.Schema{type: :array, items: User}}}}
+      ok:
+        {"Users list", "application/json",
+         %OpenApiSpex.Schema{
+           type: :object,
+           properties: %{users: %OpenApiSpex.Schema{type: :array, items: User}}
+         }}
     ]
+  )
 
   def index(conn, _params) do
     users = Accounts.list_users()
     json(conn, %{users: users})
   end
 
-  operation :show,
+  operation(:show,
     summary: "Get user",
     description: "Returns a specific user by ID",
     parameters: [
@@ -44,13 +51,14 @@ defmodule ApiWeb.UserController do
       ok: {"User", "application/json", User},
       not_found: {"Not found", "application/json", Error}
     ]
+  )
 
   def show(conn, %{"id" => id}) do
     user = Accounts.get_user!(id)
     json(conn, %{user: user})
   end
 
-  operation :update,
+  operation(:update,
     summary: "Update user",
     description: "Update an existing user",
     parameters: [
@@ -62,6 +70,7 @@ defmodule ApiWeb.UserController do
       ok: {"User updated", "application/json", User},
       unprocessable_entity: {"Validation error", "application/json", Error}
     ]
+  )
 
   def update(conn, %{"id" => id, "user" => user_params}) do
     user = Accounts.get_user!(id)
@@ -77,7 +86,7 @@ defmodule ApiWeb.UserController do
     end
   end
 
-  operation :delete,
+  operation(:delete,
     summary: "Delete user",
     description: "Delete a user",
     parameters: [
@@ -88,6 +97,7 @@ defmodule ApiWeb.UserController do
       no_content: "User deleted",
       unprocessable_entity: {"Error", "application/json", Error}
     ]
+  )
 
   def delete(conn, %{"id" => id}) do
     user = Accounts.get_user!(id)

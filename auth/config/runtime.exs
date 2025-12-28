@@ -8,8 +8,7 @@ if config_env() == :prod do
     database: System.get_env("POSTGRES_DB") || raise("POSTGRES_DB not set"),
     pool_size: String.to_integer(System.get_env("POOL_SIZE", "10"))
 
-  config :auth, :grpc,
-    port: String.to_integer(System.get_env("GRPC_PORT", "50051"))
+  config :auth, :grpc, port: String.to_integer(System.get_env("GRPC_PORT", "50051"))
 
   config :auth, :jwt,
     secret_key: System.get_env("JWT_SECRET_KEY") || raise("JWT_SECRET_KEY not set"),

@@ -57,17 +57,23 @@ defmodule Api.AccountsTest do
 
     test "authenticate_user/2 with valid credentials returns user" do
       {:ok, user} = Accounts.create_user(@valid_attrs)
-      assert {:ok, authenticated_user} = Accounts.authenticate_user("test@example.com", "password123")
+
+      assert {:ok, authenticated_user} =
+               Accounts.authenticate_user("test@example.com", "password123")
+
       assert authenticated_user.id == user.id
     end
 
     test "authenticate_user/2 with invalid password returns error" do
       {:ok, _user} = Accounts.create_user(@valid_attrs)
-      assert {:error, :invalid_credentials} = Accounts.authenticate_user("test@example.com", "wrongpassword")
+
+      assert {:error, :invalid_credentials} =
+               Accounts.authenticate_user("test@example.com", "wrongpassword")
     end
 
     test "authenticate_user/2 with non-existent email returns error" do
-      assert {:error, :invalid_credentials} = Accounts.authenticate_user("nonexistent@example.com", "password123")
+      assert {:error, :invalid_credentials} =
+               Accounts.authenticate_user("nonexistent@example.com", "password123")
     end
   end
 end

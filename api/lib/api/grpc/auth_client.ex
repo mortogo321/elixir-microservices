@@ -14,7 +14,9 @@ defmodule Api.Grpc.AuthClient do
     port = System.get_env("AUTH_GRPC_PORT", "50051")
 
     case GRPC.Stub.connect("#{host}:#{port}") do
-      {:ok, channel} -> {:ok, channel}
+      {:ok, channel} ->
+        {:ok, channel}
+
       {:error, reason} ->
         Logger.error("Failed to connect to auth service: #{inspect(reason)}")
         {:error, :connection_failed}
@@ -32,6 +34,7 @@ defmodule Api.Grpc.AuthClient do
         :exit, _ -> :ok
       end
     end)
+
     :ok
   end
 
@@ -46,14 +49,15 @@ defmodule Api.Grpc.AuthClient do
         name: name || ""
       }
 
-      result = case Auth.AuthService.Stub.register(channel, request) do
-        {:ok, response} ->
-          {:ok, response}
+      result =
+        case Auth.AuthService.Stub.register(channel, request) do
+          {:ok, response} ->
+            {:ok, response}
 
-        {:error, %GRPC.RPCError{} = error} ->
-          Logger.error("gRPC register error: #{inspect(error)}")
-          {:error, error.message}
-      end
+          {:error, %GRPC.RPCError{} = error} ->
+            Logger.error("gRPC register error: #{inspect(error)}")
+            {:error, error.message}
+        end
 
       safe_disconnect(channel)
       result
@@ -70,14 +74,15 @@ defmodule Api.Grpc.AuthClient do
         password: password
       }
 
-      result = case Auth.AuthService.Stub.login(channel, request) do
-        {:ok, response} ->
-          {:ok, response}
+      result =
+        case Auth.AuthService.Stub.login(channel, request) do
+          {:ok, response} ->
+            {:ok, response}
 
-        {:error, %GRPC.RPCError{} = error} ->
-          Logger.error("gRPC login error: #{inspect(error)}")
-          {:error, error.message}
-      end
+          {:error, %GRPC.RPCError{} = error} ->
+            Logger.error("gRPC login error: #{inspect(error)}")
+            {:error, error.message}
+        end
 
       safe_disconnect(channel)
       result
@@ -91,14 +96,15 @@ defmodule Api.Grpc.AuthClient do
     with {:ok, channel} <- get_channel() do
       request = %Auth.ValidateTokenRequest{token: token}
 
-      result = case Auth.AuthService.Stub.validate_token(channel, request) do
-        {:ok, response} ->
-          {:ok, response}
+      result =
+        case Auth.AuthService.Stub.validate_token(channel, request) do
+          {:ok, response} ->
+            {:ok, response}
 
-        {:error, %GRPC.RPCError{} = error} ->
-          Logger.error("gRPC validate_token error: #{inspect(error)}")
-          {:error, error.message}
-      end
+          {:error, %GRPC.RPCError{} = error} ->
+            Logger.error("gRPC validate_token error: #{inspect(error)}")
+            {:error, error.message}
+        end
 
       safe_disconnect(channel)
       result
@@ -112,14 +118,15 @@ defmodule Api.Grpc.AuthClient do
     with {:ok, channel} <- get_channel() do
       request = %Auth.RefreshTokenRequest{refresh_token: refresh_token}
 
-      result = case Auth.AuthService.Stub.refresh_token(channel, request) do
-        {:ok, response} ->
-          {:ok, response}
+      result =
+        case Auth.AuthService.Stub.refresh_token(channel, request) do
+          {:ok, response} ->
+            {:ok, response}
 
-        {:error, %GRPC.RPCError{} = error} ->
-          Logger.error("gRPC refresh_token error: #{inspect(error)}")
-          {:error, error.message}
-      end
+          {:error, %GRPC.RPCError{} = error} ->
+            Logger.error("gRPC refresh_token error: #{inspect(error)}")
+            {:error, error.message}
+        end
 
       safe_disconnect(channel)
       result
@@ -133,14 +140,15 @@ defmodule Api.Grpc.AuthClient do
     with {:ok, channel} <- get_channel() do
       request = %Auth.GetUserRequest{user_id: user_id}
 
-      result = case Auth.AuthService.Stub.get_user(channel, request) do
-        {:ok, response} ->
-          {:ok, response}
+      result =
+        case Auth.AuthService.Stub.get_user(channel, request) do
+          {:ok, response} ->
+            {:ok, response}
 
-        {:error, %GRPC.RPCError{} = error} ->
-          Logger.error("gRPC get_user error: #{inspect(error)}")
-          {:error, error.message}
-      end
+          {:error, %GRPC.RPCError{} = error} ->
+            Logger.error("gRPC get_user error: #{inspect(error)}")
+            {:error, error.message}
+        end
 
       safe_disconnect(channel)
       result
@@ -154,14 +162,15 @@ defmodule Api.Grpc.AuthClient do
     with {:ok, channel} <- get_channel() do
       request = %Auth.GetUserByEmailRequest{email: email}
 
-      result = case Auth.AuthService.Stub.get_user_by_email(channel, request) do
-        {:ok, response} ->
-          {:ok, response}
+      result =
+        case Auth.AuthService.Stub.get_user_by_email(channel, request) do
+          {:ok, response} ->
+            {:ok, response}
 
-        {:error, %GRPC.RPCError{} = error} ->
-          Logger.error("gRPC get_user_by_email error: #{inspect(error)}")
-          {:error, error.message}
-      end
+          {:error, %GRPC.RPCError{} = error} ->
+            Logger.error("gRPC get_user_by_email error: #{inspect(error)}")
+            {:error, error.message}
+        end
 
       safe_disconnect(channel)
       result

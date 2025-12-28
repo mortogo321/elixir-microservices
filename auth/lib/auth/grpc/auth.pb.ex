@@ -3,11 +3,11 @@ defmodule Auth.Proto.User do
 
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :id, 1, type: :int64
-  field :email, 2, type: :string
-  field :name, 3, type: :string
-  field :created_at, 4, type: :string, json_name: "createdAt"
-  field :updated_at, 5, type: :string, json_name: "updatedAt"
+  field(:id, 1, type: :int64)
+  field(:email, 2, type: :string)
+  field(:name, 3, type: :string)
+  field(:created_at, 4, type: :string, json_name: "createdAt")
+  field(:updated_at, 5, type: :string, json_name: "updatedAt")
 end
 
 defmodule Auth.Proto.RegisterRequest do
@@ -15,9 +15,9 @@ defmodule Auth.Proto.RegisterRequest do
 
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :email, 1, type: :string
-  field :password, 2, type: :string
-  field :name, 3, type: :string
+  field(:email, 1, type: :string)
+  field(:password, 2, type: :string)
+  field(:name, 3, type: :string)
 end
 
 defmodule Auth.Proto.LoginRequest do
@@ -25,8 +25,8 @@ defmodule Auth.Proto.LoginRequest do
 
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :email, 1, type: :string
-  field :password, 2, type: :string
+  field(:email, 1, type: :string)
+  field(:password, 2, type: :string)
 end
 
 defmodule Auth.Proto.ValidateTokenRequest do
@@ -34,7 +34,7 @@ defmodule Auth.Proto.ValidateTokenRequest do
 
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :token, 1, type: :string
+  field(:token, 1, type: :string)
 end
 
 defmodule Auth.Proto.RefreshTokenRequest do
@@ -42,7 +42,7 @@ defmodule Auth.Proto.RefreshTokenRequest do
 
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :refresh_token, 1, type: :string, json_name: "refreshToken"
+  field(:refresh_token, 1, type: :string, json_name: "refreshToken")
 end
 
 defmodule Auth.Proto.GetUserRequest do
@@ -50,7 +50,7 @@ defmodule Auth.Proto.GetUserRequest do
 
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :user_id, 1, type: :int64, json_name: "userId"
+  field(:user_id, 1, type: :int64, json_name: "userId")
 end
 
 defmodule Auth.Proto.GetUserByEmailRequest do
@@ -58,7 +58,7 @@ defmodule Auth.Proto.GetUserByEmailRequest do
 
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :email, 1, type: :string
+  field(:email, 1, type: :string)
 end
 
 defmodule Auth.Proto.AuthResponse do
@@ -66,12 +66,12 @@ defmodule Auth.Proto.AuthResponse do
 
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :success, 1, type: :bool
-  field :message, 2, type: :string
-  field :user, 3, type: Auth.Proto.User
-  field :access_token, 4, type: :string, json_name: "accessToken"
-  field :refresh_token, 5, type: :string, json_name: "refreshToken"
-  field :expires_in, 6, type: :int64, json_name: "expiresIn"
+  field(:success, 1, type: :bool)
+  field(:message, 2, type: :string)
+  field(:user, 3, type: Auth.Proto.User)
+  field(:access_token, 4, type: :string, json_name: "accessToken")
+  field(:refresh_token, 5, type: :string, json_name: "refreshToken")
+  field(:expires_in, 6, type: :int64, json_name: "expiresIn")
 end
 
 defmodule Auth.Proto.ValidateTokenResponse do
@@ -79,9 +79,9 @@ defmodule Auth.Proto.ValidateTokenResponse do
 
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :valid, 1, type: :bool
-  field :message, 2, type: :string
-  field :user, 3, type: Auth.Proto.User
+  field(:valid, 1, type: :bool)
+  field(:message, 2, type: :string)
+  field(:user, 3, type: Auth.Proto.User)
 end
 
 defmodule Auth.Proto.UserResponse do
@@ -89,9 +89,9 @@ defmodule Auth.Proto.UserResponse do
 
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.12.0"
 
-  field :success, 1, type: :bool
-  field :message, 2, type: :string
-  field :user, 3, type: Auth.Proto.User
+  field(:success, 1, type: :bool)
+  field(:message, 2, type: :string)
+  field(:user, 3, type: Auth.Proto.User)
 end
 
 defmodule Auth.Proto.AuthService.Service do
@@ -99,12 +99,12 @@ defmodule Auth.Proto.AuthService.Service do
 
   use GRPC.Service, name: "auth.AuthService", protoc_gen_elixir_version: "0.12.0"
 
-  rpc :Register, Auth.Proto.RegisterRequest, Auth.Proto.AuthResponse
-  rpc :Login, Auth.Proto.LoginRequest, Auth.Proto.AuthResponse
-  rpc :ValidateToken, Auth.Proto.ValidateTokenRequest, Auth.Proto.ValidateTokenResponse
-  rpc :RefreshToken, Auth.Proto.RefreshTokenRequest, Auth.Proto.AuthResponse
-  rpc :GetUser, Auth.Proto.GetUserRequest, Auth.Proto.UserResponse
-  rpc :GetUserByEmail, Auth.Proto.GetUserByEmailRequest, Auth.Proto.UserResponse
+  rpc(:Register, Auth.Proto.RegisterRequest, Auth.Proto.AuthResponse)
+  rpc(:Login, Auth.Proto.LoginRequest, Auth.Proto.AuthResponse)
+  rpc(:ValidateToken, Auth.Proto.ValidateTokenRequest, Auth.Proto.ValidateTokenResponse)
+  rpc(:RefreshToken, Auth.Proto.RefreshTokenRequest, Auth.Proto.AuthResponse)
+  rpc(:GetUser, Auth.Proto.GetUserRequest, Auth.Proto.UserResponse)
+  rpc(:GetUserByEmail, Auth.Proto.GetUserByEmailRequest, Auth.Proto.UserResponse)
 end
 
 defmodule Auth.Proto.AuthService.Stub do

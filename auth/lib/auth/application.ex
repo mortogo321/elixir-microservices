@@ -8,7 +8,8 @@ defmodule Auth.Application do
     children = [
       Auth.Repo,
       Auth.Events.Publisher,
-      {GRPC.Server.Supervisor, endpoint: Auth.GRPC.Endpoint, port: grpc_port(), start_server: true}
+      {GRPC.Server.Supervisor,
+       endpoint: Auth.GRPC.Endpoint, port: grpc_port(), start_server: true}
     ]
 
     opts = [strategy: :one_for_one, name: Auth.Supervisor]

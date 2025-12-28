@@ -7,8 +7,7 @@ config :alert,
   rabbitmq_exchange: "events",
   rabbitmq_queue: "alert.user_signup"
 
-config :alert, Alert.Mailer,
-  adapter: Swoosh.Adapters.SMTP
+config :alert, Alert.Mailer, adapter: Swoosh.Adapters.SMTP
 
 # Disable Swoosh API client (we use SMTP, not API)
 config :swoosh, :api_client, false

@@ -5,9 +5,9 @@ defmodule ApiWeb.AuthController do
   alias Api.Grpc.AuthClient
   alias ApiWeb.Schemas.{AuthResponse, UserRequest, LoginRequest, RefreshRequest, Error}
 
-  tags ["auth"]
+  tags(["auth"])
 
-  operation :register,
+  operation(:register,
     summary: "Register a new user",
     description: "Create a new user account via auth gRPC service",
     request_body: {"User registration", "application/json", UserRequest},
@@ -15,6 +15,7 @@ defmodule ApiWeb.AuthController do
       created: {"Auth response", "application/json", AuthResponse},
       unprocessable_entity: {"Validation error", "application/json", Error}
     ]
+  )
 
   def register(conn, %{"user" => user_params}) do
     email = user_params["email"]
@@ -44,7 +45,7 @@ defmodule ApiWeb.AuthController do
     end
   end
 
-  operation :login,
+  operation(:login,
     summary: "Login",
     description: "Authenticate user via auth gRPC service",
     request_body: {"Login credentials", "application/json", LoginRequest},
@@ -52,6 +53,7 @@ defmodule ApiWeb.AuthController do
       ok: {"Auth response", "application/json", AuthResponse},
       unauthorized: {"Invalid credentials", "application/json", Error}
     ]
+  )
 
   def login(conn, %{"email" => email, "password" => password}) do
     case AuthClient.login(email, password) do
@@ -75,7 +77,7 @@ defmodule ApiWeb.AuthController do
     end
   end
 
-  operation :refresh,
+  operation(:refresh,
     summary: "Refresh token",
     description: "Refresh access token using refresh token via auth gRPC service",
     request_body: {"Refresh token", "application/json", RefreshRequest},
@@ -83,6 +85,7 @@ defmodule ApiWeb.AuthController do
       ok: {"Auth response", "application/json", AuthResponse},
       unauthorized: {"Invalid refresh token", "application/json", Error}
     ]
+  )
 
   def refresh(conn, %{"refresh_token" => refresh_token}) do
     case AuthClient.refresh_token(refresh_token) do
@@ -106,7 +109,7 @@ defmodule ApiWeb.AuthController do
     end
   end
 
-  operation :validate,
+  operation(:validate,
     summary: "Validate token",
     description: "Validate an access token via auth gRPC service",
     parameters: [
@@ -121,6 +124,7 @@ defmodule ApiWeb.AuthController do
       ok: {"Validation response", "application/json", AuthResponse},
       unauthorized: {"Invalid token", "application/json", Error}
     ]
+  )
 
   def validate(conn, _params) do
     with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
@@ -138,6 +142,7 @@ defmodule ApiWeb.AuthController do
   end
 
   defp format_user(nil), do: nil
+
   defp format_user(user) do
     %{
       id: user.id,

@@ -89,11 +89,12 @@ defmodule Auth.Events.Publisher do
     pass = Application.get_env(:auth, :rabbitmq_pass, "guest")
     exchange = Application.get_env(:auth, :rabbitmq_exchange, "events")
 
-    with {:ok, connection} <- AMQP.Connection.open(
-           host: host,
-           username: user,
-           password: pass
-         ),
+    with {:ok, connection} <-
+           AMQP.Connection.open(
+             host: host,
+             username: user,
+             password: pass
+           ),
          {:ok, channel} <- AMQP.Channel.open(connection) do
       # Declare exchange
       :ok = AMQP.Exchange.declare(channel, exchange, :topic, durable: true)

@@ -88,12 +88,12 @@ defmodule Auth.AuthService.Service do
   @moduledoc false
   use GRPC.Service, name: "auth.AuthService", protoc_gen_elixir_version: "0.12.0"
 
-  rpc :Register, Auth.RegisterRequest, Auth.AuthResponse
-  rpc :Login, Auth.LoginRequest, Auth.AuthResponse
-  rpc :ValidateToken, Auth.ValidateTokenRequest, Auth.ValidateTokenResponse
-  rpc :RefreshToken, Auth.RefreshTokenRequest, Auth.AuthResponse
-  rpc :GetUser, Auth.GetUserRequest, Auth.UserResponse
-  rpc :GetUserByEmail, Auth.GetUserByEmailRequest, Auth.UserResponse
+  rpc(:Register, Auth.RegisterRequest, Auth.AuthResponse)
+  rpc(:Login, Auth.LoginRequest, Auth.AuthResponse)
+  rpc(:ValidateToken, Auth.ValidateTokenRequest, Auth.ValidateTokenResponse)
+  rpc(:RefreshToken, Auth.RefreshTokenRequest, Auth.AuthResponse)
+  rpc(:GetUser, Auth.GetUserRequest, Auth.UserResponse)
+  rpc(:GetUserByEmail, Auth.GetUserByEmailRequest, Auth.UserResponse)
 end
 
 defmodule Auth.AuthService.Stub do

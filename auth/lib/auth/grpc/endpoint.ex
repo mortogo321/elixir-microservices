@@ -5,7 +5,7 @@ defmodule Auth.GRPC.Endpoint do
 
   use GRPC.Endpoint
 
-  intercept GRPC.Server.Interceptors.Logger
+  intercept(GRPC.Server.Interceptors.Logger)
 
-  run Auth.GRPC.Server
+  run(Auth.GRPC.Server)
 end
