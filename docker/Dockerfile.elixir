@@ -73,7 +73,8 @@ ARG APP_NAME
 
 COPY ${APP_NAME}/config config
 COPY ${APP_NAME}/lib lib
-COPY ${APP_NAME}/priv priv
+# Copy priv directory if it exists (not all services have it)
+COPY ${APP_NAME}/priv* priv/
 
 RUN mix compile
 RUN mix release
