@@ -2,8 +2,11 @@ defmodule ApiWeb.AuthController do
   use ApiWeb, :controller
   use OpenApiSpex.ControllerSpecs
 
-  alias Api.Grpc.AuthClient
   alias ApiWeb.Schemas.{AuthResponse, UserRequest, LoginRequest, RefreshRequest, Error}
+
+  defp auth_client do
+    Application.get_env(:api, :auth_client, Api.Grpc.AuthClient)
+  end
 
   tags(["auth"])
 
@@ -22,7 +25,7 @@ defmodule ApiWeb.AuthController do
     password = user_params["password"]
     name = user_params["name"]
 
-    case AuthClient.register(email, password, name) do
+    case auth_client().register(email, password, name) do
       {:ok, %{success: true} = response} ->
         conn
         |> put_status(:created)
@@ -56,7 +59,7 @@ defmodule ApiWeb.AuthController do
   )
 
   def login(conn, %{"email" => email, "password" => password}) do
-    case AuthClient.login(email, password) do
+    case auth_client().login(email, password) do
       {:ok, %{success: true} = response} ->
         json(conn, %{
           user: format_user(response.user),
@@ -88,7 +91,7 @@ defmodule ApiWeb.AuthController do
   )
 
   def refresh(conn, %{"refresh_token" => refresh_token}) do
-    case AuthClient.refresh_token(refresh_token) do
+    case auth_client().refresh_token(refresh_token) do
       {:ok, %{success: true} = response} ->
         json(conn, %{
           user: format_user(response.user),
@@ -128,7 +131,7 @@ defmodule ApiWeb.AuthController do
 
   def validate(conn, _params) do
     with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
-         {:ok, %{valid: true, user: user}} <- AuthClient.validate_token(token) do
+         {:ok, %{valid: true, user: user}} <- auth_client().validate_token(token) do
       json(conn, %{
         valid: true,
         user: format_user(user)

@@ -15,3 +15,6 @@ config :api, ApiWeb.Endpoint,
 
 config :logger, level: :warning
 config :phoenix, :plug_init_mode, :runtime
+
+# Use mock for auth client in tests
+config :api, :auth_client, Api.Grpc.AuthClientMock

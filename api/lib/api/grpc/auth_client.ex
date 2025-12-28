@@ -4,6 +4,8 @@ defmodule Api.Grpc.AuthClient do
   Provides functions to communicate with the auth gRPC server.
   """
 
+  @behaviour Api.Grpc.AuthClientBehaviour
+
   require Logger
 
   @doc """
