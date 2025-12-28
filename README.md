@@ -19,7 +19,7 @@ Event-driven microservices with Elixir, Phoenix, gRPC, RabbitMQ, and Bun.
                                                   ▼
                                            ┌─────────────┐
                                            │    Alert    │
-                                           │   Service   │
+                                           │   Consumer  │
                                            └──────┬──────┘
                                                   │
                                                   ▼
@@ -33,13 +33,13 @@ Event-driven microservices with Elixir, Phoenix, gRPC, RabbitMQ, and Bun.
 
 | Service | Port | Description |
 |---------|------|-------------|
-| Web | 3000 | Bun/Elysia gateway with Auth UI |
+| Web | 3000 | Bun/Elysia frontend |
 | API | 4000 | Phoenix REST API |
-| Auth | 50051 | gRPC authentication service |
-| Alert | - | Event consumer (welcome emails) |
+| Auth | 50051 | gRPC authentication |
+| Alert | - | RabbitMQ consumer (emails) |
 | PostgreSQL | 5432 | Database |
 | RabbitMQ | 5672, 15672 | Message broker |
-| Mailpit | 8025 | Email testing UI |
+| Mailpit | 8025 | Email testing |
 
 ## Quick Start
 
@@ -48,10 +48,10 @@ cd docker
 docker compose -f compose.development.yml up --build
 ```
 
-**URLs:**
-- Web UI: http://localhost:3000
-- Auth UI: http://localhost:3000/auth/login
-- API Swagger: http://localhost:4000/swaggerui
+## URLs
+
+- Web: http://localhost:3000
+- API Docs: http://localhost:4000/swaggerui
 - RabbitMQ: http://localhost:15672 (guest/guest)
 - Mailpit: http://localhost:8025
 
@@ -60,23 +60,27 @@ docker compose -f compose.development.yml up --build
 ```
 ├── api/          # Phoenix REST API
 ├── auth/         # gRPC auth service
-├── alert/        # RabbitMQ consumer (emails)
-├── web/          # Bun gateway
+├── alert/        # RabbitMQ consumer
+├── web/          # Bun frontend
 ├── shared/       # Shared Elixir library
-└── docker/       # Docker compose files
+├── docker/       # Docker configs
+└── scripts/      # Dev scripts
 ```
 
-## Event Flow
+## Scripts
 
-```
-Signup → Auth → RabbitMQ → Alert → Welcome Email
+```bash
+./scripts/deps.sh      # Install dependencies
+./scripts/format.sh    # Format code
+./scripts/lint.sh      # Run Credo
+./scripts/check.sh     # Format + lint
+./scripts/test.sh      # Run tests
 ```
 
 ## Tech Stack
 
-- Elixir 1.16, Phoenix 1.7
+- Elixir 1.18, OTP 27, Phoenix 1.7
 - gRPC, Protobuf
-- RabbitMQ (AMQP)
+- RabbitMQ (AMQP 4.0)
 - PostgreSQL 16
-- Bun, Elysia, TypeScript
-- Docker
+- Bun, TypeScript
