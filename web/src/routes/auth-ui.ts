@@ -1,5 +1,5 @@
-import { Elysia } from "elysia";
 import { html } from "@elysiajs/html";
+import { Elysia } from "elysia";
 
 const styles = `
   * { box-sizing: border-box; margin: 0; padding: 0; }

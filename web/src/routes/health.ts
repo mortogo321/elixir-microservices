@@ -13,5 +13,5 @@ export const healthRoutes = new Elysia({ prefix: "/health" }).get(
       summary: "Health check",
       description: "Returns the health status of the Bun gateway service",
     },
-  }
+  },
 );

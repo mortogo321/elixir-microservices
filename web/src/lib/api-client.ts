@@ -11,7 +11,7 @@ export class ApiClient {
     };
 
     if (token) {
-      headers["Authorization"] = token;
+      headers.Authorization = token;
     }
 
     return headers;
@@ -24,7 +24,9 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: "Unknown error" }));
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
       throw new Error(error.error || `HTTP error! status: ${response.status}`);
     }
 
@@ -39,7 +41,9 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: "Unknown error" }));
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
       throw new Error(error.error || `HTTP error! status: ${response.status}`);
     }
 
@@ -54,7 +58,9 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: "Unknown error" }));
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
       throw new Error(error.error || `HTTP error! status: ${response.status}`);
     }
 
@@ -68,7 +74,9 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: "Unknown error" }));
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
       throw new Error(error.error || `HTTP error! status: ${response.status}`);
     }
 

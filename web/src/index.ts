@@ -1,9 +1,9 @@
-import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
+import { Elysia } from "elysia";
 import { apiRoutes } from "./routes/api";
-import { healthRoutes } from "./routes/health";
 import { authUiRoutes } from "./routes/auth-ui";
+import { healthRoutes } from "./routes/health";
 
 const app = new Elysia()
   .use(
@@ -11,7 +11,7 @@ const app = new Elysia()
       origin: ["http://localhost:4000", "http://localhost:3000"],
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
-    })
+    }),
   )
   .use(
     swagger({
@@ -30,7 +30,7 @@ const app = new Elysia()
         ],
       },
       path: "/swagger",
-    })
+    }),
   )
   .get("/", ({ redirect }) => redirect("/auth/login"))
   .use(healthRoutes)
@@ -39,8 +39,8 @@ const app = new Elysia()
   .listen(3000);
 
 console.log(
-  `🦊 Bun server is running at ${app.server?.hostname}:${app.server?.port}`
+  `🦊 Bun server is running at ${app.server?.hostname}:${app.server?.port}`,
 );
-console.log(`📚 Swagger docs available at http://localhost:3000/swagger`);
+console.log("📚 Swagger docs available at http://localhost:3000/swagger");
 
 export type App = typeof app;

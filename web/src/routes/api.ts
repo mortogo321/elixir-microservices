@@ -2,7 +2,7 @@ import { Elysia, t } from "elysia";
 import { ApiClient } from "../lib/api-client";
 
 const apiClient = new ApiClient(
-  process.env.API_URL || "http://localhost:4000/api"
+  process.env.API_URL || "http://localhost:4000/api",
 );
 
 export const apiRoutes = new Elysia({ prefix: "/api" })
@@ -23,7 +23,7 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
         summary: "Register a new user",
         description: "Create a new user account and return auth token",
       },
-    }
+    },
   )
   .post(
     "/auth/login",
@@ -40,7 +40,7 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
         summary: "Login",
         description: "Authenticate user and return auth token",
       },
-    }
+    },
   )
   .post(
     "/auth/refresh",
@@ -56,7 +56,7 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
         summary: "Refresh token",
         description: "Get new access token using refresh token",
       },
-    }
+    },
   )
   .get(
     "/auth/validate",
@@ -72,7 +72,7 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
         summary: "Validate token",
         description: "Validate the current access token",
       },
-    }
+    },
   )
 
   // User routes
@@ -90,7 +90,7 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
         summary: "Get current user",
         description: "Returns the currently authenticated user",
       },
-    }
+    },
   )
   .get(
     "/users",
@@ -106,7 +106,7 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
         summary: "List all users",
         description: "Returns a list of all users",
       },
-    }
+    },
   )
   .get(
     "/users/:id",
@@ -125,7 +125,7 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
         summary: "Get user by ID",
         description: "Returns a specific user by their ID",
       },
-    }
+    },
   )
 
   // Message routes
@@ -140,12 +140,16 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
         summary: "List messages",
         description: "Returns a list of all messages (public)",
       },
-    }
+    },
   )
   .post(
     "/messages",
     async ({ body, headers }) => {
-      return apiClient.post("/messages", { message: body }, headers.authorization);
+      return apiClient.post(
+        "/messages",
+        { message: body },
+        headers.authorization,
+      );
     },
     {
       body: t.Object({
@@ -159,7 +163,7 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
         summary: "Create message",
         description: "Create a new message (requires authentication)",
       },
-    }
+    },
   )
   .get(
     "/messages/:id",
@@ -178,7 +182,7 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
         summary: "Get message by ID",
         description: "Returns a specific message by its ID",
       },
-    }
+    },
   )
   .put(
     "/messages/:id",
@@ -186,7 +190,7 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
       return apiClient.put(
         `/messages/${params.id}`,
         { message: body },
-        headers.authorization
+        headers.authorization,
       );
     },
     {
@@ -204,7 +208,7 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
         summary: "Update message",
         description: "Update an existing message (owner only)",
       },
-    }
+    },
   )
   .delete(
     "/messages/:id",
@@ -223,5 +227,5 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
         summary: "Delete message",
         description: "Delete a message (owner only)",
       },
-    }
+    },
   );

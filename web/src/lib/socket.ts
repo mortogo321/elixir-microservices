@@ -14,7 +14,8 @@ export class PhoenixSocket {
   private token?: string;
   private channels: Map<string, Channel> = new Map();
   private messageRef = 0;
-  private pendingCallbacks: Map<string, (response: unknown) => void> = new Map();
+  private pendingCallbacks: Map<string, (response: unknown) => void> =
+    new Map();
 
   constructor(options: SocketOptions) {
     this.url = options.url;
@@ -23,9 +24,7 @@ export class PhoenixSocket {
 
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const wsUrl = this.token
-        ? `${this.url}?token=${this.token}`
-        : this.url;
+      const wsUrl = this.token ? `${this.url}?token=${this.token}` : this.url;
 
       this.ws = new WebSocket(wsUrl);
 
@@ -92,7 +91,7 @@ export class PhoenixSocket {
       if (!channel.callbacks.has(event)) {
         channel.callbacks.set(event, []);
       }
-      channel.callbacks.get(event)!.push(callback);
+      channel.callbacks.get(event)?.push(callback);
     }
   }
 
@@ -106,7 +105,7 @@ export class PhoenixSocket {
           event,
           payload,
           ref: messageRef,
-        })
+        }),
       );
     }
 
@@ -123,9 +122,9 @@ export class PhoenixSocket {
 
     // Handle reply to pending callbacks
     if (event === "phx_reply" && this.pendingCallbacks.has(ref)) {
-      const callback = this.pendingCallbacks.get(ref)!;
+      const callback = this.pendingCallbacks.get(ref);
       this.pendingCallbacks.delete(ref);
-      callback(payload);
+      if (callback) callback(payload);
       return;
     }
 
@@ -134,7 +133,9 @@ export class PhoenixSocket {
     if (channel) {
       const callbacks = channel.callbacks.get(event);
       if (callbacks) {
-        callbacks.forEach((callback) => callback(payload));
+        for (const callback of callbacks) {
+          callback(payload);
+        }
       }
     }
   }
