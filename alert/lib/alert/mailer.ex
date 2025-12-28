@@ -9,12 +9,12 @@ defmodule Alert.Mailer do
 
   @from {"Elixir Demo", "noreply@example.com"}
 
-  def send_welcome_email(%{"email" => email, "name" => name}) do
+  def send_welcome_email(%{"email" => email_address, "name" => name}) do
     name = if name && name != "", do: name, else: "User"
 
     email =
       new()
-      |> to({name, email})
+      |> to({name, email_address})
       |> from(@from)
       |> subject("Welcome to Elixir Demo!")
       |> html_body(welcome_html(name))
@@ -22,11 +22,11 @@ defmodule Alert.Mailer do
 
     case deliver(email) do
       {:ok, _} ->
-        Logger.info("Welcome email sent to #{email}")
+        Logger.info("Welcome email sent to #{email_address}")
         :ok
 
       {:error, reason} ->
-        Logger.error("Failed to send welcome email: #{inspect(reason)}")
+        Logger.error("Failed to send welcome email to #{email_address}: #{inspect(reason)}")
         {:error, reason}
     end
   end

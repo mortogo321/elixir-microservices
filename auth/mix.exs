@@ -26,7 +26,7 @@ defmodule Auth.MixProject do
   defp deps do
     [
       # Shared library
-      {:shared, path: "./shared"},
+      {:shared, path: "../shared"},
 
       # gRPC
       {:grpc, "~> 0.8"},

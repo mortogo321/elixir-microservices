@@ -79,7 +79,7 @@ services:
       AUTH_GRPC_HOST: auth
       AUTH_GRPC_PORT: 50051
     volumes:
-      - ../shared:/app/shared:delegated
+      - ../shared:/shared:delegated
       - ../api/lib:/app/lib:delegated
       - ../api/config:/app/config:delegated
       - ../api/priv:/app/priv:delegated
@@ -116,7 +116,7 @@ services:
       POSTGRES_HOST: postgres
       RABBITMQ_HOST: rabbitmq
     volumes:
-      - ../shared:/app/shared:delegated
+      - ../shared:/shared:delegated
       - ../auth/lib:/app/lib:delegated
       - ../auth/config:/app/config:delegated
       - ../auth/priv:/app/priv:delegated
@@ -154,7 +154,7 @@ services:
       SMTP_HOST: mailpit
       SMTP_PORT: 1025
     volumes:
-      - ../shared:/app/shared:delegated
+      - ../shared:/shared:delegated
       - ../alert/lib:/app/lib:delegated
       - ../alert/config:/app/config:delegated
       - ../alert/test:/app/test:delegated

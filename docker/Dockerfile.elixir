@@ -32,8 +32,8 @@ ARG APP_NAME
 ENV MIX_ENV=dev
 ENV APP_NAME=${APP_NAME}
 
-# Copy shared library first
-COPY shared /app/shared
+# Copy shared library first (to /shared for ../shared path reference)
+COPY shared /shared
 
 # Copy service mix.exs (mix.lock may not exist initially)
 COPY ${APP_NAME}/mix.exs ./
@@ -58,7 +58,7 @@ FROM base AS deps
 ARG APP_NAME
 ENV MIX_ENV=prod
 
-COPY shared /app/shared
+COPY shared /shared
 COPY ${APP_NAME}/mix.exs ./
 COPY ${APP_NAME}/mix.lock* ./
 RUN mix deps.get --only prod

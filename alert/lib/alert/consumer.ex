@@ -39,8 +39,14 @@ defmodule Alert.Consumer do
 
     case Jason.decode(payload) do
       {:ok, event} ->
-        handle_event(event)
-        AMQP.Basic.ack(state.channel, meta.delivery_tag)
+        try do
+          handle_event(event)
+          AMQP.Basic.ack(state.channel, meta.delivery_tag)
+        rescue
+          e ->
+            Logger.error("Failed to process event: #{inspect(e)}")
+            AMQP.Basic.reject(state.channel, meta.delivery_tag, requeue: false)
+        end
 
       {:error, reason} ->
         Logger.error("Failed to decode message: #{inspect(reason)}")
