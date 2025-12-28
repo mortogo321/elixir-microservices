@@ -21,6 +21,9 @@ defmodule Auth.GRPC.Server do
       {:ok, user} ->
         {access_token, refresh_token, expires_in} = Token.generate_tokens(user)
 
+        # Publish signup event to RabbitMQ
+        Auth.Events.Publisher.publish_user_signup(user)
+
         %Proto.AuthResponse{
           success: true,
           message: "User registered successfully",

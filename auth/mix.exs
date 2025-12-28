@@ -25,6 +25,9 @@ defmodule Auth.MixProject do
 
   defp deps do
     [
+      # Shared library
+      {:shared, path: "../shared"},
+
       # gRPC
       {:grpc, "~> 0.8"},
       {:protobuf, "~> 0.12"},
@@ -36,6 +39,9 @@ defmodule Auth.MixProject do
       # Auth
       {:bcrypt_elixir, "~> 3.0"},
       {:jose, "~> 1.11"},
+
+      # Message Queue
+      {:amqp, "~> 3.3"},
 
       # Utils
       {:jason, "~> 1.2"},

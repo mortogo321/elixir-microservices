@@ -7,14 +7,35 @@ name: elixir-demo
 
 services:
   # ---------------------------------------------------------------------------
+  # RabbitMQ Message Broker
+  # ---------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    env_file: .env.development
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - elixir-network
+
+  # ---------------------------------------------------------------------------
   # PostgreSQL Database
   # ---------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
+    env_file: .env.development
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-api_dev}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
@@ -36,12 +57,10 @@ services:
       context: ../api
       dockerfile: Dockerfile
       target: development
+    env_file: .env.development
     environment:
       MIX_ENV: dev
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_HOST: postgres
-      POSTGRES_DB: ${POSTGRES_DB:-api_dev}
       PHX_HOST: localhost
       SECRET_KEY_BASE: dev_secret_key_base_that_is_at_least_64_characters_long_enough_for_dev
       AUTH_GRPC_HOST: auth
@@ -76,12 +95,11 @@ services:
       context: ../auth
       dockerfile: Dockerfile
       target: development
+    env_file: .env.development
     environment:
       MIX_ENV: dev
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_HOST: postgres
-      POSTGRES_DB: ${AUTH_DB:-auth_dev}
+      POSTGRES_DB: ${AUTH_DB}
       GRPC_PORT: 50051
       JWT_SECRET_KEY: dev_jwt_secret_key_at_least_32_characters_long
       ACCESS_TOKEN_TTL: 3600
@@ -101,6 +119,35 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - elixir-network
+    stdin_open: true
+    tty: true
+
+  # ---------------------------------------------------------------------------
+  # Alert Service - Event Consumer
+  # ---------------------------------------------------------------------------
+  alert:
+    build:
+      context: ../alert
+      dockerfile: Dockerfile
+      target: development
+    env_file: .env.development
+    environment:
+      MIX_ENV: dev
+      RABBITMQ_HOST: rabbitmq
+    volumes:
+      - ../alert/lib:/app/lib:delegated
+      - ../alert/config:/app/config:delegated
+      - ../alert/test:/app/test:delegated
+      - ../alert/mix.exs:/app/mix.exs:delegated
+      - alert_build:/app/_build
+      - alert_deps:/app/deps
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     networks:
       - elixir-network
     stdin_open: true
@@ -114,6 +161,7 @@ services:
       context: ../web
       dockerfile: Dockerfile
       target: development
+    env_file: .env.development
     environment:
       NODE_ENV: development
       API_URL: http://api:4000/api
@@ -140,6 +188,8 @@ volumes:
   api_deps:
   auth_build:
   auth_deps:
+  alert_build:
+  alert_deps:
   web_node_modules:
 
 networks:

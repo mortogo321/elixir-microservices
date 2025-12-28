@@ -7,6 +7,7 @@ defmodule Auth.Application do
   def start(_type, _args) do
     children = [
       Auth.Repo,
+      Auth.Events.Publisher,
       {GRPC.Server.Supervisor, endpoint: Auth.GRPC.Endpoint, port: grpc_port(), start_server: true}
     ]
 
