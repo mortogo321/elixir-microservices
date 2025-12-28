@@ -42,6 +42,38 @@ export const apiRoutes = new Elysia({ prefix: "/api" })
       },
     }
   )
+  .post(
+    "/auth/refresh",
+    async ({ body }) => {
+      return apiClient.post("/auth/refresh", body);
+    },
+    {
+      body: t.Object({
+        refresh_token: t.String(),
+      }),
+      detail: {
+        tags: ["auth"],
+        summary: "Refresh token",
+        description: "Get new access token using refresh token",
+      },
+    }
+  )
+  .get(
+    "/auth/validate",
+    async ({ headers }) => {
+      return apiClient.get("/auth/validate", headers.authorization);
+    },
+    {
+      headers: t.Object({
+        authorization: t.String(),
+      }),
+      detail: {
+        tags: ["auth"],
+        summary: "Validate token",
+        description: "Validate the current access token",
+      },
+    }
+  )
 
   // User routes
   .get(

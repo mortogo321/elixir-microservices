@@ -28,9 +28,11 @@ defmodule ApiWeb.Router do
     # Health check
     get "/health", HealthController, :index
 
-    # Auth routes
+    # Auth routes (via gRPC to auth service)
     post "/auth/register", AuthController, :register
     post "/auth/login", AuthController, :login
+    post "/auth/refresh", AuthController, :refresh
+    get "/auth/validate", AuthController, :validate
 
     # Public messages (read only)
     get "/messages", MessageController, :index

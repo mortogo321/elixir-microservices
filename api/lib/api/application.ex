@@ -8,6 +8,7 @@ defmodule Api.Application do
     children = [
       Api.Repo,
       {Phoenix.PubSub, name: Api.PubSub},
+      {GRPC.Client.Supervisor, []},
       ApiWeb.Endpoint
     ]
 

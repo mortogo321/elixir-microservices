@@ -21,20 +21,20 @@ defmodule Auth.GRPC.Server do
       {:ok, user} ->
         {access_token, refresh_token, expires_in} = Token.generate_tokens(user)
 
-        Proto.AuthResponse.new(
+        %Proto.AuthResponse{
           success: true,
           message: "User registered successfully",
           user: user_to_proto(user),
           access_token: access_token,
           refresh_token: refresh_token,
           expires_in: expires_in
-        )
+        }
 
       {:error, changeset} ->
-        Proto.AuthResponse.new(
+        %Proto.AuthResponse{
           success: false,
           message: format_errors(changeset)
-        )
+        }
     end
   end
 
@@ -44,20 +44,20 @@ defmodule Auth.GRPC.Server do
       {:ok, user} ->
         {access_token, refresh_token, expires_in} = Token.generate_tokens(user)
 
-        Proto.AuthResponse.new(
+        %Proto.AuthResponse{
           success: true,
           message: "Login successful",
           user: user_to_proto(user),
           access_token: access_token,
           refresh_token: refresh_token,
           expires_in: expires_in
-        )
+        }
 
       {:error, :invalid_credentials} ->
-        Proto.AuthResponse.new(
+        %Proto.AuthResponse{
           success: false,
           message: "Invalid email or password"
-        )
+        }
     end
   end
 
@@ -68,30 +68,30 @@ defmodule Auth.GRPC.Server do
       {:ok, claims} ->
         case Accounts.get_user(claims["sub"]) do
           nil ->
-            Proto.ValidateTokenResponse.new(
+            %Proto.ValidateTokenResponse{
               valid: false,
               message: "User not found"
-            )
+            }
 
           user ->
-            Proto.ValidateTokenResponse.new(
+            %Proto.ValidateTokenResponse{
               valid: true,
               message: "Token is valid",
               user: user_to_proto(user)
-            )
+            }
         end
 
       {:error, :token_expired} ->
-        Proto.ValidateTokenResponse.new(
+        %Proto.ValidateTokenResponse{
           valid: false,
           message: "Token has expired"
-        )
+        }
 
       {:error, _} ->
-        Proto.ValidateTokenResponse.new(
+        %Proto.ValidateTokenResponse{
           valid: false,
           message: "Invalid token"
-        )
+        }
     end
   end
 
@@ -102,35 +102,35 @@ defmodule Auth.GRPC.Server do
       {:ok, claims} ->
         case Accounts.get_user(claims["sub"]) do
           nil ->
-            Proto.AuthResponse.new(
+            %Proto.AuthResponse{
               success: false,
               message: "User not found"
-            )
+            }
 
           user ->
             {access_token, refresh_token, expires_in} = Token.generate_tokens(user)
 
-            Proto.AuthResponse.new(
+            %Proto.AuthResponse{
               success: true,
               message: "Token refreshed successfully",
               user: user_to_proto(user),
               access_token: access_token,
               refresh_token: refresh_token,
               expires_in: expires_in
-            )
+            }
         end
 
       {:error, :token_expired} ->
-        Proto.AuthResponse.new(
+        %Proto.AuthResponse{
           success: false,
           message: "Refresh token has expired"
-        )
+        }
 
       {:error, _} ->
-        Proto.AuthResponse.new(
+        %Proto.AuthResponse{
           success: false,
           message: "Invalid refresh token"
-        )
+        }
     end
   end
 
@@ -138,17 +138,17 @@ defmodule Auth.GRPC.Server do
   def get_user(request, _stream) do
     case Accounts.get_user(request.user_id) do
       nil ->
-        Proto.UserResponse.new(
+        %Proto.UserResponse{
           success: false,
           message: "User not found"
-        )
+        }
 
       user ->
-        Proto.UserResponse.new(
+        %Proto.UserResponse{
           success: true,
           message: "User found",
           user: user_to_proto(user)
-        )
+        }
     end
   end
 
@@ -157,30 +157,30 @@ defmodule Auth.GRPC.Server do
   def get_user_by_email(request, _stream) do
     case Accounts.get_user_by_email(request.email) do
       nil ->
-        Proto.UserResponse.new(
+        %Proto.UserResponse{
           success: false,
           message: "User not found"
-        )
+        }
 
       user ->
-        Proto.UserResponse.new(
+        %Proto.UserResponse{
           success: true,
           message: "User found",
           user: user_to_proto(user)
-        )
+        }
     end
   end
 
   # Helpers
 
   defp user_to_proto(user) do
-    Proto.User.new(
+    %Proto.User{
       id: user.id,
       email: user.email,
       name: user.name || "",
       created_at: DateTime.to_iso8601(user.inserted_at),
       updated_at: DateTime.to_iso8601(user.updated_at)
-    )
+    }
   end
 
   defp format_errors(changeset) do

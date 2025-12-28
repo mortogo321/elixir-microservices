@@ -72,13 +72,47 @@ defmodule ApiWeb.Schemas do
 
     OpenApiSpex.schema(%{
       title: "AuthResponse",
-      description: "Authentication response with user and token",
+      description: "Authentication response with user and tokens",
       type: :object,
       properties: %{
         user: User,
-        token: %Schema{type: :string, description: "JWT token"}
+        access_token: %Schema{type: :string, description: "JWT access token"},
+        refresh_token: %Schema{type: :string, description: "JWT refresh token"},
+        expires_in: %Schema{type: :integer, description: "Token expiration time in seconds"}
       },
-      required: [:user, :token]
+      required: [:user, :access_token]
+    })
+  end
+
+  defmodule RefreshRequest do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "RefreshRequest",
+      description: "Request body for token refresh",
+      type: :object,
+      properties: %{
+        refresh_token: %Schema{type: :string, description: "Refresh token"}
+      },
+      required: [:refresh_token],
+      example: %{
+        refresh_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      }
+    })
+  end
+
+  defmodule ValidateResponse do
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      title: "ValidateResponse",
+      description: "Token validation response",
+      type: :object,
+      properties: %{
+        valid: %Schema{type: :boolean, description: "Whether the token is valid"},
+        user: User
+      },
+      required: [:valid]
     })
   end
 

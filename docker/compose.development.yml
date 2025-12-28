@@ -44,6 +44,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-api_dev}
       PHX_HOST: localhost
       SECRET_KEY_BASE: dev_secret_key_base_that_is_at_least_64_characters_long_enough_for_dev
+      AUTH_GRPC_HOST: auth
+      AUTH_GRPC_PORT: 50051
     volumes:
       # Mount source code for hot reload - changes on host reflect in container
       - ../api/lib:/app/lib:delegated
@@ -56,6 +58,46 @@ services:
       - api_deps:/app/deps
     ports:
       - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth:
+        condition: service_started
+    networks:
+      - elixir-network
+    stdin_open: true
+    tty: true
+
+  # ---------------------------------------------------------------------------
+  # Auth gRPC Service - Development with Hot Reload
+  # ---------------------------------------------------------------------------
+  auth:
+    build:
+      context: ../auth
+      dockerfile: Dockerfile
+      target: development
+    environment:
+      MIX_ENV: dev
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${AUTH_DB:-auth_dev}
+      GRPC_PORT: 50051
+      JWT_SECRET_KEY: dev_jwt_secret_key_at_least_32_characters_long
+      ACCESS_TOKEN_TTL: 3600
+      REFRESH_TOKEN_TTL: 604800
+    volumes:
+      # Mount source code for hot reload
+      - ../auth/lib:/app/lib:delegated
+      - ../auth/config:/app/config:delegated
+      - ../auth/priv:/app/priv:delegated
+      - ../auth/test:/app/test:delegated
+      - ../auth/mix.exs:/app/mix.exs:delegated
+      # Persist build artifacts and deps
+      - auth_build:/app/_build
+      - auth_deps:/app/deps
+    ports:
+      - "50051:50051"
     depends_on:
       postgres:
         condition: service_healthy
@@ -96,6 +138,8 @@ volumes:
   postgres_data:
   api_build:
   api_deps:
+  auth_build:
+  auth_deps:
   web_node_modules:
 
 networks:

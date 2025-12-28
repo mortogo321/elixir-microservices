@@ -27,6 +27,36 @@ services:
     restart: unless-stopped
 
   # ---------------------------------------------------------------------------
+  # Auth gRPC Service - Production
+  # ---------------------------------------------------------------------------
+  auth:
+    build:
+      context: ../auth
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      MIX_ENV: prod
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${AUTH_DB}
+      GRPC_PORT: 50051
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL}
+      REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - elixir-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
   # Elixir Phoenix API - Production
   # ---------------------------------------------------------------------------
   api:
@@ -46,11 +76,15 @@ services:
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       GUARDIAN_SECRET_KEY: ${GUARDIAN_SECRET_KEY}
       POOL_SIZE: ${POOL_SIZE:-10}
+      AUTH_GRPC_HOST: auth
+      AUTH_GRPC_PORT: 50051
     ports:
       - "4000:4000"
     depends_on:
       postgres:
         condition: service_healthy
+      auth:
+        condition: service_started
     networks:
       - elixir-network
     restart: unless-stopped

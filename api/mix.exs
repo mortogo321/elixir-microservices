@@ -38,6 +38,8 @@ defmodule Api.MixProject do
       {:bcrypt_elixir, "~> 3.0"},
       {:guardian, "~> 2.3"},
       {:open_api_spex, "~> 3.18"},
+      {:grpc, "~> 0.8"},
+      {:protobuf, "~> 0.12"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.18", only: :test}
