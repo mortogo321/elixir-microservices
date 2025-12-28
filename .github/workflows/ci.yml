@@ -34,10 +34,18 @@ jobs:
       # Elixir Code Quality
       # -------------------------------------------------------------------------
       - name: Setup Elixir
-        uses: erlef/setup-beam@v1
+        id: beam
+        uses: erlef/setup-beam@v1.18.2
         with:
-          otp-version: '26.2'
-          elixir-version: '1.16'
+          otp-version: '26.2.5'
+          elixir-version: '1.16.3'
+
+      - name: Verify Elixir installation
+        run: |
+          echo "Installed Elixir: ${{ steps.beam.outputs.elixir-version }}"
+          echo "Installed OTP: ${{ steps.beam.outputs.otp-version }}"
+          elixir --version
+          mix --version
 
       - name: Cache Elixir deps
         uses: actions/cache@v4
@@ -54,9 +62,6 @@ jobs:
           key: ${{ runner.os }}-elixir-${{ hashFiles('api/mix.lock', 'auth/mix.lock', 'alert/mix.lock') }}
           restore-keys: |
             ${{ runner.os }}-elixir-
-
-      - name: Verify Elixir installation
-        run: elixir --version
 
       - name: Install shared deps
         working-directory: shared
@@ -152,10 +157,10 @@ jobs:
       # Elixir Tests
       # -------------------------------------------------------------------------
       - name: Setup Elixir
-        uses: erlef/setup-beam@v1
+        uses: erlef/setup-beam@v1.18.2
         with:
-          otp-version: '26.2'
-          elixir-version: '1.16'
+          otp-version: '26.2.5'
+          elixir-version: '1.16.3'
 
       - name: Cache Elixir deps
         uses: actions/cache@v4
