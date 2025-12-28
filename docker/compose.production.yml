@@ -1,0 +1,92 @@
+# =============================================================================
+# Docker Compose for Production
+# Features: Optimized builds, health checks, security
+# =============================================================================
+
+name: elixir-demo
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - elixir-network
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Elixir Phoenix API - Production
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      MIX_ENV: prod
+      DATABASE_URL: ecto://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      PHX_HOST: ${PHX_HOST:-localhost}
+      PORT: 4000
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      GUARDIAN_SECRET_KEY: ${GUARDIAN_SECRET_KEY}
+      POOL_SIZE: ${POOL_SIZE:-10}
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - elixir-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Bun Web Service - Production
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      NODE_ENV: production
+      API_URL: http://api:4000/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - elixir-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+volumes:
+  postgres_data:
+
+networks:
+  elixir-network:
+    driver: bridge

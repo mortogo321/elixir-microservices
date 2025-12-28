@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package auth;
+
+// Auth Service Definition
+service AuthService {
+  // Register a new user
+  rpc Register(RegisterRequest) returns (AuthResponse);
+
+  // Login with credentials
+  rpc Login(LoginRequest) returns (AuthResponse);
+
+  // Validate a token
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+
+  // Refresh token
+  rpc RefreshToken(RefreshTokenRequest) returns (AuthResponse);
+
+  // Get user by ID
+  rpc GetUser(GetUserRequest) returns (UserResponse);
+
+  // Get user by email
+  rpc GetUserByEmail(GetUserByEmailRequest) returns (UserResponse);
+}
+
+// Request Messages
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string name = 3;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message GetUserRequest {
+  int64 user_id = 1;
+}
+
+message GetUserByEmailRequest {
+  string email = 1;
+}
+
+// Response Messages
+message AuthResponse {
+  bool success = 1;
+  string message = 2;
+  User user = 3;
+  string access_token = 4;
+  string refresh_token = 5;
+  int64 expires_in = 6;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  string message = 2;
+  User user = 3;
+}
+
+message UserResponse {
+  bool success = 1;
+  string message = 2;
+  User user = 3;
+}
+
+// User model
+message User {
+  int64 id = 1;
+  string email = 2;
+  string name = 3;
+  string created_at = 4;
+  string updated_at = 5;
+}

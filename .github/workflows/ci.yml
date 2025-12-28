@@ -1,0 +1,288 @@
+# =============================================================================
+# CI/CD Pipeline for Elixir + Bun Microservice
+# Stages: Code Quality -> Testing -> Build -> Deploy
+# =============================================================================
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  MIX_ENV: test
+  NODE_ENV: test
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: api_test
+
+jobs:
+  # ===========================================================================
+  # Stage 1: Code Quality Checks
+  # ===========================================================================
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -------------------------------------------------------------------------
+      # Elixir Code Quality
+      # -------------------------------------------------------------------------
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.16'
+          otp-version: '26'
+
+      - name: Cache Elixir deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            api/deps
+            api/_build
+          key: ${{ runner.os }}-elixir-${{ hashFiles('api/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-elixir-
+
+      - name: Install Elixir dependencies
+        working-directory: api
+        run: mix deps.get
+
+      - name: Check Elixir formatting
+        working-directory: api
+        run: mix format --check-formatted
+
+      - name: Run Credo (Elixir linter)
+        working-directory: api
+        run: mix credo --strict
+
+      - name: Run Dialyzer (static analysis)
+        working-directory: api
+        run: mix dialyzer --format github
+
+      # -------------------------------------------------------------------------
+      # Bun/TypeScript Code Quality
+      # -------------------------------------------------------------------------
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Cache Bun deps
+        uses: actions/cache@v4
+        with:
+          path: web/node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('web/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install Bun dependencies
+        working-directory: web
+        run: bun install --frozen-lockfile
+
+      - name: Run Biome lint
+        working-directory: web
+        run: bun run lint
+
+      - name: TypeScript type check
+        working-directory: web
+        run: bun run typecheck
+
+  # ===========================================================================
+  # Stage 2: Testing
+  # ===========================================================================
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: api_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -------------------------------------------------------------------------
+      # Elixir Tests
+      # -------------------------------------------------------------------------
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.16'
+          otp-version: '26'
+
+      - name: Cache Elixir deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            api/deps
+            api/_build
+          key: ${{ runner.os }}-elixir-${{ hashFiles('api/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-elixir-
+
+      - name: Install Elixir dependencies
+        working-directory: api
+        run: mix deps.get
+
+      - name: Compile Elixir
+        working-directory: api
+        run: mix compile --warnings-as-errors
+
+      - name: Run Elixir tests with coverage
+        working-directory: api
+        env:
+          POSTGRES_HOST: localhost
+        run: mix coveralls.json
+
+      - name: Upload Elixir coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: api/cover/excoveralls.json
+          flags: elixir
+          name: elixir-coverage
+
+      # -------------------------------------------------------------------------
+      # Bun Tests
+      # -------------------------------------------------------------------------
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Cache Bun deps
+        uses: actions/cache@v4
+        with:
+          path: web/node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('web/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install Bun dependencies
+        working-directory: web
+        run: bun install --frozen-lockfile
+
+      - name: Run Bun tests
+        working-directory: web
+        run: bun test
+
+  # ===========================================================================
+  # Stage 3: Build Docker Images
+  # ===========================================================================
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for API
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/api
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix=
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api
+          target: production
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Extract metadata for Web
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/web
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix=
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./web
+          target: production
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ===========================================================================
+  # Stage 4: Deploy (Dummy - customize for your infrastructure)
+  # ===========================================================================
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to production
+        run: |
+          echo "🚀 Deploying to production..."
+          echo "   API Image: ghcr.io/${{ github.repository }}/api:latest"
+          echo "   Web Image: ghcr.io/${{ github.repository }}/web:latest"
+          echo ""
+          echo "📝 TODO: Customize this step for your deployment target:"
+          echo "   - Kubernetes: kubectl apply -f k8s/"
+          echo "   - Docker Swarm: docker stack deploy"
+          echo "   - AWS ECS: aws ecs update-service"
+          echo "   - Fly.io: flyctl deploy"
+          echo "   - Railway: railway up"
+          echo ""
+          echo "✅ Deployment simulation complete!"
+
+      - name: Notify deployment
+        run: |
+          echo "📣 Deployment notification would be sent here"
+          echo "   - Slack webhook"
+          echo "   - Discord webhook"
+          echo "   - Email notification"

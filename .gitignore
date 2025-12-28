@@ -1,0 +1,38 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.elixir_ls/
+
+# Environment
+.env
+.env.local
+*.env.local
+
+# Logs
+*.log
+logs/
+
+# Build artifacts
+_build/
+deps/
+node_modules/
+dist/
+*.ez
+*.beam
+erl_crash.dump
+
+# Coverage
+cover/
+coverage/
+
+# Bun
+.bun/
+
+# Dialyzer
+priv/plts/
