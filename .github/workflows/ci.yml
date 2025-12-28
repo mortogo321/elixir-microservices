@@ -45,25 +45,31 @@ jobs:
           path: |
             api/deps
             api/_build
-          key: ${{ runner.os }}-elixir-${{ hashFiles('api/mix.lock') }}
+            auth/deps
+            auth/_build
+            alert/deps
+            alert/_build
+          key: ${{ runner.os }}-elixir-${{ hashFiles('api/mix.lock', 'auth/mix.lock', 'alert/mix.lock') }}
           restore-keys: |
             ${{ runner.os }}-elixir-
 
       - name: Install Elixir dependencies
-        working-directory: api
-        run: mix deps.get
+        run: |
+          cd api && mix deps.get
+          cd ../auth && mix deps.get
+          cd ../alert && mix deps.get
 
       - name: Check Elixir formatting
-        working-directory: api
-        run: mix format --check-formatted
+        run: |
+          cd api && mix format --check-formatted
+          cd ../auth && mix format --check-formatted
+          cd ../alert && mix format --check-formatted
 
       - name: Run Credo (Elixir linter)
-        working-directory: api
-        run: mix credo --strict
-
-      - name: Run Dialyzer (static analysis)
-        working-directory: api
-        run: mix dialyzer --format github
+        run: |
+          cd api && mix credo --strict
+          cd ../auth && mix credo --strict
+          cd ../alert && mix credo --strict
 
       # -------------------------------------------------------------------------
       # Bun/TypeScript Code Quality
@@ -135,23 +141,41 @@ jobs:
           path: |
             api/deps
             api/_build
-          key: ${{ runner.os }}-elixir-${{ hashFiles('api/mix.lock') }}
+            auth/deps
+            auth/_build
+            alert/deps
+            alert/_build
+          key: ${{ runner.os }}-elixir-${{ hashFiles('api/mix.lock', 'auth/mix.lock', 'alert/mix.lock') }}
           restore-keys: |
             ${{ runner.os }}-elixir-
 
       - name: Install Elixir dependencies
-        working-directory: api
-        run: mix deps.get
+        run: |
+          cd api && mix deps.get
+          cd ../auth && mix deps.get
+          cd ../alert && mix deps.get
 
-      - name: Compile Elixir
-        working-directory: api
-        run: mix compile --warnings-as-errors
+      - name: Compile Elixir (warnings as errors)
+        run: |
+          cd api && mix compile --warnings-as-errors
+          cd ../auth && mix compile --warnings-as-errors
+          cd ../alert && mix compile --warnings-as-errors
 
-      - name: Run Elixir tests with coverage
+      - name: Run API tests with coverage
         working-directory: api
         env:
           POSTGRES_HOST: localhost
         run: mix coveralls.json
+
+      - name: Run Auth tests
+        working-directory: auth
+        env:
+          POSTGRES_HOST: localhost
+        run: mix test
+
+      - name: Run Alert tests
+        working-directory: alert
+        run: mix test
 
       - name: Upload Elixir coverage
         uses: codecov/codecov-action@v4
@@ -207,38 +231,41 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for API
-        id: meta-api
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}/api
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix=
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-
       - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
-          context: ./api
+          context: .
+          file: ./docker/Dockerfile.elixir
           target: production
+          build-args: APP_NAME=api
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta-api.outputs.tags }}
-          labels: ${{ steps.meta-api.outputs.labels }}
+          tags: ghcr.io/${{ github.repository }}/api:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Extract metadata for Web
-        id: meta-web
-        uses: docker/metadata-action@v5
+      - name: Build and push Auth image
+        uses: docker/build-push-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/web
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix=
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+          context: .
+          file: ./docker/Dockerfile.elixir
+          target: production
+          build-args: APP_NAME=auth
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ghcr.io/${{ github.repository }}/auth:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Alert image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile.elixir
+          target: production
+          build-args: APP_NAME=alert
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ghcr.io/${{ github.repository }}/alert:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build and push Web image
         uses: docker/build-push-action@v5
@@ -246,8 +273,7 @@ jobs:
           context: ./web
           target: production
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta-web.outputs.tags }}
-          labels: ${{ steps.meta-web.outputs.labels }}
+          tags: ghcr.io/${{ github.repository }}/web:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

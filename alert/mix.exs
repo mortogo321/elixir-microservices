@@ -29,7 +29,8 @@ defmodule Alert.MixProject do
       {:amqp, "~> 3.3"},
       {:jason, "~> 1.4"},
       {:swoosh, "~> 1.16"},
-      {:gen_smtp, "~> 1.2"}
+      {:gen_smtp, "~> 1.2"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 end
