@@ -1,7 +1,10 @@
 # =============================================================================
-# Multi-stage Dockerfile for Alert Service
+# Shared Multi-stage Dockerfile for Elixir Services
 # Supports: development (hot reload) and production builds
+# Usage: docker build --build-arg APP_NAME=auth -f docker/Dockerfile.elixir .
 # =============================================================================
+
+ARG APP_NAME=app
 
 # -----------------------------------------------------------------------------
 # Stage: base - Common base image with Elixir and dependencies
@@ -11,7 +14,8 @@ FROM elixir:1.16-otp-26-alpine AS base
 RUN apk add --no-cache \
     build-base \
     git \
-    inotify-tools
+    inotify-tools \
+    postgresql-client
 
 WORKDIR /app
 
@@ -24,18 +28,23 @@ RUN mix local.hex --force && \
 # -----------------------------------------------------------------------------
 FROM base AS development
 
+ARG APP_NAME
 ENV MIX_ENV=dev
+ENV APP_NAME=${APP_NAME}
 
-# Copy mix.exs (mix.lock may not exist initially)
-COPY mix.exs ./
-COPY mix.lock* ./
+# Copy shared library first
+COPY shared /app/shared
+
+# Copy service mix.exs (mix.lock may not exist initially)
+COPY ${APP_NAME}/mix.exs ./
+COPY ${APP_NAME}/mix.lock* ./
 
 # Get dependencies
 RUN mix deps.get || true
 
 # Copy config and entrypoint
-COPY config config
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY ${APP_NAME}/config config
+COPY docker/docker-entrypoint.elixir.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Use entrypoint that watches mix.exs
@@ -46,10 +55,12 @@ CMD ["/usr/local/bin/docker-entrypoint.sh"]
 # -----------------------------------------------------------------------------
 FROM base AS deps
 
+ARG APP_NAME
 ENV MIX_ENV=prod
 
-COPY mix.exs ./
-COPY mix.lock* ./
+COPY shared /app/shared
+COPY ${APP_NAME}/mix.exs ./
+COPY ${APP_NAME}/mix.lock* ./
 RUN mix deps.get --only prod
 RUN mix deps.compile
 
@@ -58,8 +69,11 @@ RUN mix deps.compile
 # -----------------------------------------------------------------------------
 FROM deps AS build
 
-COPY config config
-COPY lib lib
+ARG APP_NAME
+
+COPY ${APP_NAME}/config config
+COPY ${APP_NAME}/lib lib
+COPY ${APP_NAME}/priv priv
 
 RUN mix compile
 RUN mix release
@@ -69,10 +83,13 @@ RUN mix release
 # -----------------------------------------------------------------------------
 FROM alpine:3.19 AS production
 
+ARG APP_NAME
+
 RUN apk add --no-cache \
     libstdc++ \
     openssl \
-    ncurses-libs
+    ncurses-libs \
+    postgresql-client
 
 WORKDIR /app
 
@@ -80,10 +97,10 @@ WORKDIR /app
 RUN addgroup -g 1000 elixir && \
     adduser -u 1000 -G elixir -s /bin/sh -D elixir
 
-COPY --from=build --chown=elixir:elixir /app/_build/prod/rel/alert ./
+COPY --from=build --chown=elixir:elixir /app/_build/prod/rel/${APP_NAME} ./
 
 USER elixir
 
 ENV MIX_ENV=prod
 
-CMD ["bin/alert", "start"]
+CMD ["bin/${APP_NAME}", "start"]

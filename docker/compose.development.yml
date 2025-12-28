@@ -11,10 +11,9 @@ services:
   # ---------------------------------------------------------------------------
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
-    env_file: .env.development
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     ports:
       - "5672:5672"   # AMQP
       - "15672:15672" # Management UI
@@ -31,18 +30,17 @@ services:
   # ---------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
-    env_file: .env.development
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: api_dev
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -54,25 +52,25 @@ services:
   # ---------------------------------------------------------------------------
   api:
     build:
-      context: ../api
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile.elixir
       target: development
-    env_file: .env.development
+      args:
+        APP_NAME: api
+    env_file: ../api/.env.development
     environment:
       MIX_ENV: dev
+      APP_NAME: api
       POSTGRES_HOST: postgres
-      PHX_HOST: localhost
-      SECRET_KEY_BASE: dev_secret_key_base_that_is_at_least_64_characters_long_enough_for_dev
       AUTH_GRPC_HOST: auth
       AUTH_GRPC_PORT: 50051
     volumes:
-      # Mount source code for hot reload - changes on host reflect in container
+      - ../shared:/app/shared:delegated
       - ../api/lib:/app/lib:delegated
       - ../api/config:/app/config:delegated
       - ../api/priv:/app/priv:delegated
       - ../api/test:/app/test:delegated
       - ../api/mix.exs:/app/mix.exs:delegated
-      # Persist build artifacts and deps to avoid re-downloading
       - api_build:/app/_build
       - api_deps:/app/deps
     ports:
@@ -92,26 +90,24 @@ services:
   # ---------------------------------------------------------------------------
   auth:
     build:
-      context: ../auth
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile.elixir
       target: development
-    env_file: .env.development
+      args:
+        APP_NAME: auth
+    env_file: ../auth/.env.development
     environment:
       MIX_ENV: dev
+      APP_NAME: auth
       POSTGRES_HOST: postgres
-      POSTGRES_DB: ${AUTH_DB}
-      GRPC_PORT: 50051
-      JWT_SECRET_KEY: dev_jwt_secret_key_at_least_32_characters_long
-      ACCESS_TOKEN_TTL: 3600
-      REFRESH_TOKEN_TTL: 604800
+      RABBITMQ_HOST: rabbitmq
     volumes:
-      # Mount source code for hot reload
+      - ../shared:/app/shared:delegated
       - ../auth/lib:/app/lib:delegated
       - ../auth/config:/app/config:delegated
       - ../auth/priv:/app/priv:delegated
       - ../auth/test:/app/test:delegated
       - ../auth/mix.exs:/app/mix.exs:delegated
-      # Persist build artifacts and deps
       - auth_build:/app/_build
       - auth_deps:/app/deps
     ports:
@@ -131,14 +127,18 @@ services:
   # ---------------------------------------------------------------------------
   alert:
     build:
-      context: ../alert
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile.elixir
       target: development
-    env_file: .env.development
+      args:
+        APP_NAME: alert
+    env_file: ../alert/.env.development
     environment:
       MIX_ENV: dev
+      APP_NAME: alert
       RABBITMQ_HOST: rabbitmq
     volumes:
+      - ../shared:/app/shared:delegated
       - ../alert/lib:/app/lib:delegated
       - ../alert/config:/app/config:delegated
       - ../alert/test:/app/test:delegated
@@ -161,17 +161,15 @@ services:
       context: ../web
       dockerfile: Dockerfile
       target: development
-    env_file: .env.development
+    env_file: ../web/.env.development
     environment:
       NODE_ENV: development
       API_URL: http://api:4000/api
     volumes:
-      # Mount source code for hot reload - changes on host reflect in container
       - ../web/src:/app/src:delegated
       - ../web/package.json:/app/package.json:delegated
       - ../web/tsconfig.json:/app/tsconfig.json:delegated
       - ../web/biome.json:/app/biome.json:delegated
-      # Persist node_modules to avoid re-downloading
       - web_node_modules:/app/node_modules
     ports:
       - "3000:3000"

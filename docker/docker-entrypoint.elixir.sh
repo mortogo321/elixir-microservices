@@ -12,6 +12,12 @@ get_mix_hash() {
 echo "📦 Installing dependencies..."
 mix deps.get
 
+# Run migrations if ecto is available
+if mix help ecto.migrate > /dev/null 2>&1; then
+  echo "🗄️  Running database setup..."
+  mix ecto.setup || mix ecto.migrate || true
+fi
+
 # Store initial hash
 get_mix_hash > "$MIX_HASH_FILE"
 
@@ -31,6 +37,6 @@ get_mix_hash > "$MIX_HASH_FILE"
   done
 ) &
 
-# Start alert service
-echo "🔔 Starting Alert service..."
-exec iex -S mix
+# Start the application
+echo "🚀 Starting ${APP_NAME:-app}..."
+exec iex -S mix phx.server 2>/dev/null || exec iex -S mix
