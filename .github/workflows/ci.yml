@@ -18,6 +18,10 @@ env:
   POSTGRES_PASSWORD: postgres
   POSTGRES_DB: api_test
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   # ===========================================================================
   # Stage 1: Code Quality Checks
@@ -278,68 +282,83 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # -------------------------------------------------------------------------
+      # Registry Push (disabled by default)
+      # To enable: set ENABLE_REGISTRY_PUSH to 'true' in repository variables
+      # and ensure repository has packages:write permission
+      # -------------------------------------------------------------------------
+      - name: Check if registry push is enabled
+        id: check_push
+        run: |
+          if [ "${{ vars.ENABLE_REGISTRY_PUSH }}" == "true" ] && [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "push_enabled=true" >> $GITHUB_OUTPUT
+          else
+            echo "push_enabled=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Login to Container Registry
-        if: github.event_name != 'pull_request'
+        if: steps.check_push.outputs.push_enabled == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push API image
+      - name: Build API image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./docker/Dockerfile.elixir
           target: production
           build-args: APP_NAME=api
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ steps.check_push.outputs.push_enabled }}
           tags: ghcr.io/${{ github.repository }}/api:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push Auth image
+      - name: Build Auth image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./docker/Dockerfile.elixir
           target: production
           build-args: APP_NAME=auth
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ steps.check_push.outputs.push_enabled }}
           tags: ghcr.io/${{ github.repository }}/auth:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push Alert image
+      - name: Build Alert image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./docker/Dockerfile.elixir
           target: production
           build-args: APP_NAME=alert
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ steps.check_push.outputs.push_enabled }}
           tags: ghcr.io/${{ github.repository }}/alert:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push Web image
+      - name: Build Web image
         uses: docker/build-push-action@v5
         with:
           context: ./web
           target: production
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ steps.check_push.outputs.push_enabled }}
           tags: ghcr.io/${{ github.repository }}/web:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   # ===========================================================================
   # Stage 4: Deploy (Dummy - customize for your infrastructure)
+  # To enable: set ENABLE_REGISTRY_PUSH to 'true' in repository variables
   # ===========================================================================
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.ENABLE_REGISTRY_PUSH == 'true'
     environment: production
 
     steps:
@@ -348,22 +367,22 @@ jobs:
 
       - name: Deploy to production
         run: |
-          echo "🚀 Deploying to production..."
-          echo "   API Image: ghcr.io/${{ github.repository }}/api:latest"
-          echo "   Web Image: ghcr.io/${{ github.repository }}/web:latest"
+          echo "Deploying to production..."
+          echo "   API Image: ghcr.io/${{ github.repository }}/api:${{ github.sha }}"
+          echo "   Auth Image: ghcr.io/${{ github.repository }}/auth:${{ github.sha }}"
+          echo "   Alert Image: ghcr.io/${{ github.repository }}/alert:${{ github.sha }}"
+          echo "   Web Image: ghcr.io/${{ github.repository }}/web:${{ github.sha }}"
           echo ""
-          echo "📝 TODO: Customize this step for your deployment target:"
+          echo "TODO: Customize this step for your deployment target:"
           echo "   - Kubernetes: kubectl apply -f k8s/"
           echo "   - Docker Swarm: docker stack deploy"
           echo "   - AWS ECS: aws ecs update-service"
           echo "   - Fly.io: flyctl deploy"
           echo "   - Railway: railway up"
-          echo ""
-          echo "✅ Deployment simulation complete!"
 
       - name: Notify deployment
         run: |
-          echo "📣 Deployment notification would be sent here"
+          echo "Deployment notification would be sent here"
           echo "   - Slack webhook"
           echo "   - Discord webhook"
           echo "   - Email notification"
