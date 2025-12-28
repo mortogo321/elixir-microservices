@@ -1,14 +1,63 @@
 # Elixir + Bun Microservice
 
-A production-ready microservice demo featuring Elixir/Phoenix API with real-time WebSocket support and Bun gateway service.
+A production-ready microservice demo featuring Elixir/Phoenix API with real-time WebSocket support, gRPC auth service, and Bun gateway.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              Client (Browser)                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         Web Gateway (Bun/Elysia)                            │
+│                            localhost:3000                                    │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
+│  │   /api/*    │  │  /swagger   │  │   /health   │  │  /auth/* (UI)       │ │
+│  │  REST Proxy │  │    Docs     │  │   Checks    │  │  Login/Register     │ │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
+                    │
+                    ▼ HTTP/REST
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         API Service (Phoenix)                                │
+│                            localhost:4000                                    │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
+│  │   /api/*    │  │ /swaggerui  │  │  Channels   │  │   gRPC Client       │ │
+│  │  REST API   │  │    Docs     │  │  WebSocket  │  │   (Auth calls)      │ │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
+         │                                                    │
+         ▼ Ecto                                               ▼ gRPC
+┌─────────────────────────┐                    ┌─────────────────────────────┐
+│   PostgreSQL (api_dev)  │                    │    Auth Service (Elixir)    │
+│      localhost:5432     │                    │       localhost:50051       │
+│  ┌───────────────────┐  │                    │  ┌───────────────────────┐  │
+│  │      messages     │  │                    │  │   gRPC Server         │  │
+│  └───────────────────┘  │                    │  │   JWT Token Gen       │  │
+└─────────────────────────┘                    │  │   User Management     │  │
+                                               │  └───────────────────────┘  │
+                                               └─────────────────────────────┘
+                                                              │
+                                                              ▼ Ecto
+                                               ┌─────────────────────────────┐
+                                               │  PostgreSQL (auth_dev)      │
+                                               │      localhost:5432         │
+                                               │  ┌───────────────────────┐  │
+                                               │  │        users          │  │
+                                               │  └───────────────────────┘  │
+                                               └─────────────────────────────┘
+```
 
 ## Features
 
 - **Elixir Phoenix API** - REST API with OpenAPI/Swagger documentation
+- **gRPC Auth Service** - Dedicated authentication microservice with JWT tokens
 - **Real-time** - Phoenix Channels for WebSocket communication
 - **Bun Gateway** - Fast TypeScript API gateway with Elysia
+- **Auth UI** - Built-in login/register pages at `/auth/login`
 - **PostgreSQL** - Database with Ecto ORM
-- **JWT Auth** - Guardian-based authentication
 - **Docker** - Multi-stage builds with hot reload support
 - **CI/CD** - GitHub Actions pipeline with code quality, testing, build, deploy
 
@@ -49,11 +98,13 @@ cd web && bun install && bun run dev
 
 | Service | URL | Description |
 |---------|-----|-------------|
+| Web Gateway | http://localhost:3000 | Bun/Elysia gateway service |
+| Auth UI | http://localhost:3000/auth/login | Login/Register pages |
+| Web Swagger | http://localhost:3000/swagger | Gateway documentation |
 | API | http://localhost:4000 | Elixir Phoenix REST API |
 | API Swagger | http://localhost:4000/swaggerui | API documentation |
-| Web | http://localhost:3000 | Bun gateway service |
-| Web Swagger | http://localhost:3000/swagger | Gateway documentation |
-| PostgreSQL | localhost:5432 | Database |
+| Auth gRPC | localhost:50051 | Authentication gRPC service |
+| PostgreSQL | localhost:5432 | Database (api_dev, auth_dev) |
 
 ## Demo Accounts
 
@@ -66,10 +117,17 @@ After running seeds:
 ```
 ├── api/                 # Elixir Phoenix API
 │   ├── lib/api/         # Business logic (contexts)
+│   ├── lib/api/grpc/    # gRPC client for auth service
 │   ├── lib/api_web/     # Web layer (controllers, channels)
 │   └── priv/repo/       # Migrations and seeds
+├── auth/                # Elixir Auth gRPC service
+│   ├── lib/auth/        # Auth business logic
+│   ├── lib/auth/grpc/   # gRPC server implementation
+│   └── priv/protos/     # Protobuf definitions
 ├── web/                 # Bun gateway service
-│   └── src/             # TypeScript source
+│   └── src/
+│       ├── routes/      # API proxy, health, auth UI
+│       └── lib/         # API client utilities
 ├── docker/              # Docker compose files
 ├── docs/                # Documentation
 └── .github/workflows/   # CI/CD pipeline
@@ -126,8 +184,9 @@ Set these in your repository secrets for production deployment:
 ## Tech Stack
 
 - **Backend**: Elixir 1.16, Phoenix 1.7, Ecto 3.10
+- **Auth Service**: Elixir gRPC, JOSE (JWT)
 - **Gateway**: Bun 1.0, Elysia, TypeScript
 - **Database**: PostgreSQL 16
-- **Auth**: Guardian (JWT)
+- **Communication**: REST (HTTP), gRPC (Protobuf)
 - **Containers**: Docker, Docker Compose
 - **CI/CD**: GitHub Actions

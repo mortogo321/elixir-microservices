@@ -3,6 +3,7 @@ import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
 import { apiRoutes } from "./routes/api";
 import { healthRoutes } from "./routes/health";
+import { authUiRoutes } from "./routes/auth-ui";
 
 const app = new Elysia()
   .use(
@@ -31,15 +32,10 @@ const app = new Elysia()
       path: "/swagger",
     })
   )
-  .get("/", () => ({
-    name: "Elixir Bun Microservice",
-    version: "1.0.0",
-    docs: "/swagger",
-    health: "/health",
-    api: "/api",
-  }))
+  .get("/", ({ redirect }) => redirect("/auth/login"))
   .use(healthRoutes)
   .use(apiRoutes)
+  .use(authUiRoutes)
   .listen(3000);
 
 console.log(

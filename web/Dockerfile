@@ -23,13 +23,17 @@ COPY package.json bun.lockb* ./
 # Install dependencies (will be overwritten by volume mount but cached in image)
 RUN bun install
 
+# Copy entrypoint script that watches for package.json changes
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # The source code will be mounted as a volume for hot reload
 # This allows editing on host and auto-reload in container
 
 EXPOSE 3000
 
-# Use bun --hot for hot reload
-CMD ["sh", "-c", "bun install && bun run --hot src/index.ts"]
+# Use entrypoint that watches package.json and runs hot reload
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
 
 # -----------------------------------------------------------------------------
 # Stage: deps - Install production dependencies

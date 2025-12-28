@@ -34,16 +34,18 @@ COPY mix.lock* ./
 # Get dependencies (will be overwritten by volume mount but cached in image)
 RUN mix deps.get || true
 
-# Copy config
+# Copy config and entrypoint
 COPY config config
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # The source code will be mounted as a volume for hot reload
 # This allows editing on host and auto-reload in container
 
 EXPOSE 4000
 
-# Use iex for interactive development with hot reload
-CMD ["sh", "-c", "mix deps.get && (mix ecto.setup || mix ecto.migrate) && iex -S mix phx.server"]
+# Use entrypoint that watches mix.exs and runs Phoenix with hot reload
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
 
 # -----------------------------------------------------------------------------
 # Stage: deps - Build dependencies for production

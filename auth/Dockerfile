@@ -34,12 +34,15 @@ COPY mix.lock* ./
 # Get dependencies
 RUN mix deps.get || true
 
-# Copy config
+# Copy config and entrypoint
 COPY config config
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 50051
 
-CMD ["sh", "-c", "mix deps.get && (mix ecto.setup || mix ecto.migrate) && iex -S mix"]
+# Use entrypoint that watches mix.exs and runs server with hot reload
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
 
 # -----------------------------------------------------------------------------
 # Stage: deps - Build dependencies for production
