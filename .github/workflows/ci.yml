@@ -43,6 +43,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
+            shared/deps
+            shared/_build
             api/deps
             api/_build
             auth/deps
@@ -55,21 +57,23 @@ jobs:
 
       - name: Install Elixir dependencies
         run: |
-          cd api && mix deps.get
-          cd ../auth && mix deps.get
-          cd ../alert && mix deps.get
+          cd shared && mix deps.get && cd ..
+          cd api && mix deps.get && cd ..
+          cd auth && mix deps.get && cd ..
+          cd alert && mix deps.get
 
       - name: Check Elixir formatting
         run: |
-          cd api && mix format --check-formatted
-          cd ../auth && mix format --check-formatted
-          cd ../alert && mix format --check-formatted
+          mix format --check-formatted shared/
+          mix format --check-formatted api/
+          mix format --check-formatted auth/
+          mix format --check-formatted alert/
 
       - name: Run Credo (Elixir linter)
         run: |
-          cd api && mix credo --strict
-          cd ../auth && mix credo --strict
-          cd ../alert && mix credo --strict
+          cd api && mix credo --strict && cd ..
+          cd auth && mix credo --strict && cd ..
+          cd alert && mix credo --strict
 
       # -------------------------------------------------------------------------
       # Bun/TypeScript Code Quality
@@ -139,6 +143,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
+            shared/deps
+            shared/_build
             api/deps
             api/_build
             auth/deps
@@ -151,15 +157,16 @@ jobs:
 
       - name: Install Elixir dependencies
         run: |
-          cd api && mix deps.get
-          cd ../auth && mix deps.get
-          cd ../alert && mix deps.get
+          cd shared && mix deps.get && cd ..
+          cd api && mix deps.get && cd ..
+          cd auth && mix deps.get && cd ..
+          cd alert && mix deps.get
 
       - name: Compile Elixir (warnings as errors)
         run: |
-          cd api && mix compile --warnings-as-errors
-          cd ../auth && mix compile --warnings-as-errors
-          cd ../alert && mix compile --warnings-as-errors
+          cd api && mix compile --warnings-as-errors && cd ..
+          cd auth && mix compile --warnings-as-errors && cd ..
+          cd alert && mix compile --warnings-as-errors
 
       - name: Run API tests with coverage
         working-directory: api
