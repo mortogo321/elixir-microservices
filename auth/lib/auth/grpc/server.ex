@@ -6,8 +6,9 @@ defmodule Auth.GRPC.Server do
   use GRPC.Server, service: Auth.Proto.AuthService.Service
 
   alias Auth.Accounts
-  alias Auth.Token
+  alias Auth.Events.Publisher
   alias Auth.Proto
+  alias Auth.Token
 
   @spec register(Proto.RegisterRequest.t(), GRPC.Server.Stream.t()) :: Proto.AuthResponse.t()
   def register(request, _stream) do
@@ -22,7 +23,7 @@ defmodule Auth.GRPC.Server do
         {access_token, refresh_token, expires_in} = Token.generate_tokens(user)
 
         # Publish signup event to RabbitMQ
-        Auth.Events.Publisher.publish_user_signup(user)
+        Publisher.publish_user_signup(user)
 
         %Proto.AuthResponse{
           success: true,
@@ -192,7 +193,6 @@ defmodule Auth.GRPC.Server do
         String.replace(acc, "%{#{key}}", to_string(value))
       end)
     end)
-    |> Enum.map(fn {k, v} -> "#{k}: #{Enum.join(v, ", ")}" end)
-    |> Enum.join("; ")
+    |> Enum.map_join("; ", fn {k, v} -> "#{k}: #{Enum.join(v, ", ")}" end)
   end
 end

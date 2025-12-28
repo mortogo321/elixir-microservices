@@ -27,12 +27,10 @@ defmodule Auth.Token do
       {true, %JOSE.JWT{fields: claims}, _jws} ->
         now = System.system_time(:second)
 
-        cond do
-          claims["exp"] < now ->
-            {:error, :token_expired}
-
-          true ->
-            {:ok, claims}
+        if claims["exp"] < now do
+          {:error, :token_expired}
+        else
+          {:ok, claims}
         end
 
       {false, _, _} ->
