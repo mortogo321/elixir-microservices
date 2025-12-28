@@ -8,7 +8,10 @@ config :alert,
   rabbitmq_queue: "alert.user_signup"
 
 config :alert, Alert.Mailer,
-  adapter: Swoosh.Adapters.Local
+  adapter: Swoosh.Adapters.SMTP
+
+# Disable Swoosh API client (we use SMTP, not API)
+config :swoosh, :api_client, false
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

@@ -59,8 +59,8 @@ defmodule Auth.Events.Publisher do
   end
 
   @impl true
-  def handle_cast({:publish, routing_key, event}, %{channel: nil} = state) do
-    Logger.warn("Cannot publish event, not connected to RabbitMQ")
+  def handle_cast({:publish, _routing_key, _event}, %{channel: nil} = state) do
+    Logger.warning("Cannot publish event, not connected to RabbitMQ")
     {:noreply, state}
   end
 

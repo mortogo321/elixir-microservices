@@ -26,6 +26,20 @@ services:
       - elixir-network
 
   # ---------------------------------------------------------------------------
+  # Mailpit - Email Testing
+  # ---------------------------------------------------------------------------
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"   # Web UI
+      - "1025:1025"   # SMTP
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    networks:
+      - elixir-network
+
+  # ---------------------------------------------------------------------------
   # PostgreSQL Database
   # ---------------------------------------------------------------------------
   postgres:
@@ -137,6 +151,8 @@ services:
       MIX_ENV: dev
       APP_NAME: alert
       RABBITMQ_HOST: rabbitmq
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
     volumes:
       - ../shared:/app/shared:delegated
       - ../alert/lib:/app/lib:delegated
@@ -148,6 +164,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     networks:
       - elixir-network
     stdin_open: true

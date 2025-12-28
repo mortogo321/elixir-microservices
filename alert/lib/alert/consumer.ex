@@ -58,7 +58,7 @@ defmodule Alert.Consumer do
 
   @impl true
   def handle_info({:basic_cancel, _meta}, state) do
-    Logger.warn("Consumer cancelled")
+    Logger.warning("Consumer cancelled")
     {:stop, :normal, state}
   end
 
@@ -106,6 +106,6 @@ defmodule Alert.Consumer do
   end
 
   defp handle_event(event) do
-    Logger.warn("Unknown event: #{inspect(event)}")
+    Logger.warning("Unknown event: #{inspect(event)}")
   end
 end

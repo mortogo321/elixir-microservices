@@ -39,4 +39,8 @@ get_mix_hash > "$MIX_HASH_FILE"
 
 # Start the application
 echo "🚀 Starting ${APP_NAME:-app}..."
-exec iex -S mix phx.server 2>/dev/null || exec iex -S mix
+if mix help phx.server > /dev/null 2>&1; then
+  exec mix phx.server
+else
+  exec mix run --no-halt
+fi
