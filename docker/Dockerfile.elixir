@@ -82,7 +82,7 @@ RUN mix release
 # -----------------------------------------------------------------------------
 # Stage: production - Minimal runtime image
 # -----------------------------------------------------------------------------
-FROM alpine:3.19 AS production
+FROM alpine:3.21 AS production
 
 ARG APP_NAME
 

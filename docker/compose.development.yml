@@ -10,7 +10,7 @@ services:
   # RabbitMQ Message Broker
   # ---------------------------------------------------------------------------
   rabbitmq:
-    image: rabbitmq:3.13-management-alpine
+    image: rabbitmq:4.1-management-alpine
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -43,7 +43,7 @@ services:
   # PostgreSQL Database
   # ---------------------------------------------------------------------------
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
