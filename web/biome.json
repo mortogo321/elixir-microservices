@@ -1,19 +1,16 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.5.3/schema.json",
-  "organizeImports": {
-    "enabled": true
-  },
+  "$schema": "https://biomejs.dev/schemas/2.4.6/schema.json",
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
       "complexity": {
         "noExtraBooleanCast": "error",
-        "noMultipleSpacesInRegularExpressionLiterals": "error",
         "noUselessCatch": "error",
         "noUselessThisAlias": "error",
         "noUselessTypeConstraint": "error",
-        "noWith": "error"
+        "noAdjacentSpacesInRegex": "error"
       },
       "correctness": {
         "noConstAssign": "error",
@@ -23,7 +20,6 @@
         "noGlobalObjectCalls": "error",
         "noInnerDeclarations": "error",
         "noInvalidConstructorSuper": "error",
-        "noNewSymbol": "error",
         "noNonoctalDecimalEscape": "error",
         "noPrecisionLoss": "error",
         "noSelfAssign": "error",
@@ -38,7 +34,9 @@
         "noUnusedVariables": "warn",
         "useIsNan": "error",
         "useValidForDirection": "error",
-        "useYield": "error"
+        "useYield": "error",
+        "noInvalidBuiltinInstantiation": "error",
+        "useValidTypeof": "error"
       },
       "suspicious": {
         "noAsyncPromiseExecutor": "error",
@@ -62,7 +60,7 @@
         "noShadowRestrictedNames": "error",
         "noUnsafeNegation": "error",
         "useGetterReturn": "error",
-        "useValidTypeof": "error"
+        "noWith": "error"
       }
     }
   },
