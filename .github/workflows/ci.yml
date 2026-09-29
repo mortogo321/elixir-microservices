@@ -293,7 +293,7 @@ jobs:
       #   run: mix test
 
       - name: Upload Elixir coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         with:
           files: api/cover/excoveralls.json
           flags: elixir
