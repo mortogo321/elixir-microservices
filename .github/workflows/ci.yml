@@ -365,7 +365,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build API image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./docker/Dockerfile.elixir
@@ -377,7 +377,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build Auth image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./docker/Dockerfile.elixir
@@ -389,7 +389,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build Alert image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./docker/Dockerfile.elixir
@@ -401,7 +401,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build Web image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./web
           target: production
