@@ -92,7 +92,7 @@ jobs:
           mix --version
 
       - name: Cache Elixir deps
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             shared/deps
@@ -160,7 +160,7 @@ jobs:
           bun-version: 1.4.2
 
       - name: Cache Bun deps
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: web/node_modules
           key: ${{ runner.os }}-bun-${{ hashFiles('web/bun.lock') }}
@@ -220,7 +220,7 @@ jobs:
           elixir-version: '1.20'
 
       - name: Cache Elixir deps
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             shared/deps
@@ -308,7 +308,7 @@ jobs:
           bun-version: 1.4.2
 
       - name: Cache Bun deps
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: web/node_modules
           key: ${{ runner.os }}-bun-${{ hashFiles('web/bun.lock') }}
