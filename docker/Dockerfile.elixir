@@ -9,7 +9,7 @@ ARG APP_NAME=app
 # -----------------------------------------------------------------------------
 # Stage: base - Common base image with Elixir and dependencies
 # -----------------------------------------------------------------------------
-FROM elixir:1.20-otp-28-alpine AS base
+FROM elixir:1.20-otp-29-alpine AS base
 
 RUN apk add --no-cache \
     build-base \
