@@ -1,6 +1,9 @@
 defmodule Auth.GRPC.Server do
   @moduledoc """
   gRPC server implementation for AuthService.
+
+  Uses grpc_server 1.x stream-based API: every RPC (even unary) is a
+  `GRPC.Stream` pipeline terminated with `run/1`.
   """
 
   use GRPC.Server, service: Auth.Proto.AuthService.Service
@@ -10,8 +13,51 @@ defmodule Auth.GRPC.Server do
   alias Auth.Proto
   alias Auth.Token
 
-  @spec register(Proto.RegisterRequest.t(), GRPC.Server.Stream.t()) :: Proto.AuthResponse.t()
-  def register(request, _stream) do
+  def register(request, materializer) do
+    request
+    |> GRPC.Stream.unary(materializer: materializer)
+    |> GRPC.Stream.map(&do_register/1)
+    |> GRPC.Stream.run()
+  end
+
+  def login(request, materializer) do
+    request
+    |> GRPC.Stream.unary(materializer: materializer)
+    |> GRPC.Stream.map(&do_login/1)
+    |> GRPC.Stream.run()
+  end
+
+  def validate_token(request, materializer) do
+    request
+    |> GRPC.Stream.unary(materializer: materializer)
+    |> GRPC.Stream.map(&do_validate_token/1)
+    |> GRPC.Stream.run()
+  end
+
+  def refresh_token(request, materializer) do
+    request
+    |> GRPC.Stream.unary(materializer: materializer)
+    |> GRPC.Stream.map(&do_refresh_token/1)
+    |> GRPC.Stream.run()
+  end
+
+  def get_user(request, materializer) do
+    request
+    |> GRPC.Stream.unary(materializer: materializer)
+    |> GRPC.Stream.map(&do_get_user/1)
+    |> GRPC.Stream.run()
+  end
+
+  def get_user_by_email(request, materializer) do
+    request
+    |> GRPC.Stream.unary(materializer: materializer)
+    |> GRPC.Stream.map(&do_get_user_by_email/1)
+    |> GRPC.Stream.run()
+  end
+
+  # Handlers (pure request -> response; executed inside the stream)
+
+  defp do_register(request) do
     attrs = %{
       email: request.email,
       password: request.password,
@@ -42,8 +88,7 @@ defmodule Auth.GRPC.Server do
     end
   end
 
-  @spec login(Proto.LoginRequest.t(), GRPC.Server.Stream.t()) :: Proto.AuthResponse.t()
-  def login(request, _stream) do
+  defp do_login(request) do
     case Accounts.authenticate_user(request.email, request.password) do
       {:ok, user} ->
         {access_token, refresh_token, expires_in} = Token.generate_tokens(user)
@@ -65,9 +110,7 @@ defmodule Auth.GRPC.Server do
     end
   end
 
-  @spec validate_token(Proto.ValidateTokenRequest.t(), GRPC.Server.Stream.t()) ::
-          Proto.ValidateTokenResponse.t()
-  def validate_token(request, _stream) do
+  defp do_validate_token(request) do
     case Token.validate_token(request.token) do
       {:ok, claims} ->
         case Accounts.get_user(claims["sub"]) do
@@ -99,9 +142,7 @@ defmodule Auth.GRPC.Server do
     end
   end
 
-  @spec refresh_token(Proto.RefreshTokenRequest.t(), GRPC.Server.Stream.t()) ::
-          Proto.AuthResponse.t()
-  def refresh_token(request, _stream) do
+  defp do_refresh_token(request) do
     case Token.validate_refresh_token(request.refresh_token) do
       {:ok, claims} ->
         case Accounts.get_user(claims["sub"]) do
@@ -138,8 +179,7 @@ defmodule Auth.GRPC.Server do
     end
   end
 
-  @spec get_user(Proto.GetUserRequest.t(), GRPC.Server.Stream.t()) :: Proto.UserResponse.t()
-  def get_user(request, _stream) do
+  defp do_get_user(request) do
     case Accounts.get_user(request.user_id) do
       nil ->
         %Proto.UserResponse{
@@ -156,9 +196,7 @@ defmodule Auth.GRPC.Server do
     end
   end
 
-  @spec get_user_by_email(Proto.GetUserByEmailRequest.t(), GRPC.Server.Stream.t()) ::
-          Proto.UserResponse.t()
-  def get_user_by_email(request, _stream) do
+  defp do_get_user_by_email(request) do
     case Accounts.get_user_by_email(request.email) do
       nil ->
         %Proto.UserResponse{

@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 # Stage: base - Common base image with Bun
 # -----------------------------------------------------------------------------
-FROM oven/bun:1-alpine AS base
+FROM oven/bun:1.4.2-alpine AS base
 
 WORKDIR /app
 
@@ -61,7 +61,7 @@ RUN bun build src/index.ts --outdir ./dist --target bun --minify
 # -----------------------------------------------------------------------------
 # Stage: production - Minimal runtime image
 # -----------------------------------------------------------------------------
-FROM oven/bun:1-alpine AS production
+FROM oven/bun:1.4.2-alpine AS production
 
 WORKDIR /app
 

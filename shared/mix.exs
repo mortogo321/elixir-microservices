@@ -5,7 +5,7 @@ defmodule Shared.MixProject do
     [
       app: :shared,
       version: "0.1.0",
-      elixir: "~> 1.14",
+      elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]

@@ -35,7 +35,7 @@ docker run -d --name postgres \
   -e POSTGRES_PASSWORD=postgres \
   -e POSTGRES_DB=api_dev \
   -p 5432:5432 \
-  postgres:16-alpine
+  postgres:17.11-alpine
 
 # Or use your local PostgreSQL installation
 ```

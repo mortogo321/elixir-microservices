@@ -10,7 +10,7 @@ services:
   # RabbitMQ Message Broker
   # ---------------------------------------------------------------------------
   rabbitmq:
-    image: rabbitmq:4.1-management-alpine
+    image: rabbitmq:4.3.5-management-alpine
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -29,7 +29,7 @@ services:
   # Mailpit - Email Testing
   # ---------------------------------------------------------------------------
   mailpit:
-    image: axllent/mailpit:latest
+    image: axllent/mailpit:v1.30
     ports:
       - "8025:8025"   # Web UI
       - "1025:1025"   # SMTP
@@ -43,7 +43,7 @@ services:
   # PostgreSQL Database
   # ---------------------------------------------------------------------------
   postgres:
-    image: postgres:17-alpine
+    image: postgres:17.11-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres

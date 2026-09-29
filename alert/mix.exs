@@ -5,7 +5,7 @@ defmodule Alert.MixProject do
     [
       app: :alert,
       version: "0.1.0",
-      elixir: "~> 1.16",
+      elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       releases: [
@@ -28,7 +28,7 @@ defmodule Alert.MixProject do
       {:shared, path: "../shared"},
       {:amqp, "~> 4.0"},
       {:jason, "~> 1.4"},
-      {:swoosh, "~> 1.16"},
+      {:swoosh, "~> 1.28"},
       {:gen_smtp, "~> 1.2"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]

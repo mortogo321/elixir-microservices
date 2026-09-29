@@ -5,10 +5,11 @@ defmodule Api.Application do
 
   @impl true
   def start(_type, _args) do
+    # NOTE: grpc 1.x starts its client supervision tree via its own OTP
+    # application (GRPC.Client.Application) — no manual supervisor child.
     children = [
       Api.Repo,
       {Phoenix.PubSub, name: Api.PubSub},
-      {GRPC.Client.Supervisor, []},
       ApiWeb.Endpoint
     ]
 

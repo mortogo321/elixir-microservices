@@ -9,7 +9,7 @@ ARG APP_NAME=app
 # -----------------------------------------------------------------------------
 # Stage: base - Common base image with Elixir and dependencies
 # -----------------------------------------------------------------------------
-FROM elixir:1.18-otp-27-alpine AS base
+FROM elixir:1.20-otp-28-alpine AS base
 
 RUN apk add --no-cache \
     build-base \
@@ -82,9 +82,10 @@ RUN mix release
 # -----------------------------------------------------------------------------
 # Stage: production - Minimal runtime image
 # -----------------------------------------------------------------------------
-FROM alpine:3.21 AS production
+FROM alpine:3.22 AS production
 
 ARG APP_NAME
+ENV APP_NAME=${APP_NAME}
 
 RUN apk add --no-cache \
     libstdc++ \
@@ -104,4 +105,5 @@ USER elixir
 
 ENV MIX_ENV=prod
 
-CMD ["bin/${APP_NAME}", "start"]
+# APP_NAME is an ENV (see above) so the shell expands it at runtime.
+CMD ["sh", "-c", "exec bin/${APP_NAME} start"]
